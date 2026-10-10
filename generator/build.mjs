@@ -4,7 +4,7 @@
 //   docs/index.html               -> página neutra (no revela nada)
 //   docs/<codigo>/index.html      -> PANEL compartido (solo con el código)
 //   docs/demo/<slug>/index.html   -> cada demo
-// Reglas: dedupe por teléfono, prioridad automática, orden por prioridad.
+// Reglas: dedupe por teléfono, prioridad automática (o manual), orden por prioridad.
 import { readFile, writeFile, mkdir, rm, cp, readdir, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -48,13 +48,14 @@ function toObjects(rows) {
 /* -------------------------------------------------------------- helpers --- */
 const isNo = (v) => /^(no|0|false|f|n|✗)$/i.test(String(v).trim());
 const slugify = (s) =>
-  String(s || "")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "negocio";
 const digits = (s) => String(s || "").replace(/\D/g, "");
 const enc = (s) => encodeURIComponent(s || "");
 
 function priority(r) {
+  const man = String(r.prioridad_manual || "").trim();
+  if (man !== "" && !isNaN(Number(man))) return Number(man);
   let p = 0;
   const tieneWeb = r.tiene_web ? !isNo(r.tiene_web) && /^(si|sí|1|true|yes|✓|x)$/i.test(r.tiene_web) : !!r.web_actual;
   if (!tieneWeb) p += 3;
@@ -65,25 +66,21 @@ function priority(r) {
   return p;
 }
 
-// Fusiona por teléfono (o slug si no hay teléfono). Conserva lo ya trabajado.
+// Fusiona por teléfono (o slug si no hay). Conserva lo ya trabajado.
 function mergeRows(rows) {
   const map = new Map();
   for (const r of rows) {
     const key = digits(r.telefono) || slugify(r.negocio);
-    if (!map.has(key)) {
-      map.set(key, { ...r, _slug: slugify(r.negocio) });
-    } else {
+    if (!map.has(key)) map.set(key, { ...r, _slug: slugify(r.negocio) });
+    else {
       const cur = map.get(key);
-      for (const [k, v] of Object.entries(r)) {
-        if (v && !cur[k]) cur[k] = v;
-      }
+      for (const [k, v] of Object.entries(r)) if (v && !cur[k]) cur[k] = v;
     }
   }
-  // Slugs únicos
   const usados = new Map();
   for (const r of map.values()) {
-    let s = r._slug, n = usados.get(s) || 0;
-    if (n) { r._slug = s + "-" + (n + 1); }
+    const s = r._slug, n = usados.get(s) || 0;
+    if (n) r._slug = s + "-" + (n + 1);
     usados.set(s, n + 1);
   }
   return [...map.values()];
@@ -136,9 +133,11 @@ async function renderDemo(row) {
   const tok = tokensFor(row);
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
+
   let html = fill(await readFile(join(tplDir, "index.html"), "utf8"), tok);
   html = html.replace(/<\/body>/i, counterTag(row._slug) + "</body>");
   await writeFile(join(outDir, "index.html"), html, "utf8");
+
   for (const a of ["style.css", "script.js"]) {
     try { await writeFile(join(outDir, a), fill(await readFile(join(tplDir, a), "utf8"), tok), "utf8"); } catch {}
   }
@@ -148,11 +147,15 @@ async function renderDemo(row) {
 
 /* ---------------------------------------------------------------- panel --- */
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const cap = (s) => { s = String(s || ""); return s.charAt(0).toUpperCase() + s.slice(1); };
 
 function panel(rows) {
   const snapshot = rows.map((r) => ({
-    _slug: r._slug, negocio: r.negocio || "", rubro: r.rubro || "", ciudad: r.ciudad || "",
-    telefono: r.telefono || "", rating: r.rating || "", resenas: r.resenas || "", web_actual: r.web_actual || "",
+    _slug: r._slug, negocio: r.negocio || "", rubro: r.rubro || "",
+    categoria: r.categoria || "", ciudad: r.ciudad || "", contacto: r.contacto || "",
+    telefono: r.telefono || "", rating: r.rating || "", resenas: r.resenas || "",
+    web_actual: r.web_actual || "", canal: r.canal || "", proximo_contacto: r.proximo_contacto || "",
+    ultimo_contacto: r.ultimo_contacto || "",
     estado: r.estado || "Nuevo", vendedor: (r.vendedor || config.vendedorDefault || "").toLowerCase(),
     generar: !isNo(r.generar), prioridad: priority(r),
   }));
@@ -162,7 +165,7 @@ function panel(rows) {
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#2f9e6e}
+:root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
 header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
 h1{font:700 1.2rem Outfit;margin:0;flex:1}
@@ -174,13 +177,12 @@ select,input,button{font:inherit;color:var(--text);background:#15343b;border:1px
 .card+.card{margin-top:10px}
 .card h3{margin:0;font:600 1.08rem Outfit}
 .meta{color:var(--muted);font-size:.85rem}
-.row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid var(--line)}
-.wa{background:#128c7e;border:1px solid #128c7e;color:#fff;border-radius:999px;padding:4px 12px;font-size:.8rem;cursor:pointer}
-.wa:hover{filter:brightness(.95)}
-.v{font-weight:600}
-.v.estefano{color:#ffd0c4}.v.luigui{color:#8fd3c7}
+.v{font-weight:600}.v.estefano{color:#ffd0c4}.v.luigui{color:#8fd3c7}
 a{color:var(--accent)}
+.wa{background:#128c7e;border:1px solid #128c7e;color:#fff;border-radius:999px;padding:5px 12px;font-size:.8rem;cursor:pointer}
+.wa:hover{filter:brightness(.95)}
 .right{text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .prio{font:700 1.6rem Outfit;color:var(--accent)}
 .empty{color:var(--muted);padding:30px}
@@ -210,6 +212,7 @@ function isNo(v){return /^(no|0|false|f|n)$/i.test(String(v||"").trim())}
 function slugify(s){return String(s||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||"negocio"}
 function digits(s){return String(s||"").replace(/\\D/g,"")}
 function priority(r){
+  var man=String(r.prioridad_manual||"").trim(); if(man!==""&&!isNaN(Number(man)))return Number(man);
   var p=0;var tieneWeb=r.web_actual||(r.tiene_web&&!/^(no|0|false)$/i.test(r.tiene_web));
   if(!tieneWeb)p+=3;
   var res=Number(digits(r.resenas))||0; if(res>=50)p+=3; else if(res>=20)p+=2; else if(res>=10)p+=1;
@@ -236,19 +239,23 @@ function normalize(rows){
 }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var MSGS=[
- "Hola, ¿cómo está? Le escribo porque vi su negocio en Google y le armé una página web de muestra con la información que ya tiene publicada. Puede verla aquí: {link}. Si le interesa, la dejo lista con sus propias fotos y su dominio, sin compromiso.",
- "Buenas tardes. Encontré {negocio} en Google y, como vi que tiene buena reputación, le preparé una página web de muestra para que vea cómo quedaría. Está aquí: {link}. Dígame si le gusta y conversamos.",
- "¿Cómo está? Soy {vendedor}. Le hice una muestra de página web para {negocio} con lo que aparece en Google. Puede abrirla desde el celular: {link}. Cualquier consulta me escribe, sin apuro.",
- "Hola. Vi que {negocio} tiene buenas reseñas, así que le preparé una página web de muestra con sus datos. La puede ver aquí: {link}. Si le convence, la activo con sus fotos y su propio dominio.",
- "Buenas. Le armé una página de muestra para {negocio} con la información pública de Google. Échele un ojo aquí: {link}. Si quiere, la dejamos lista en pocos días.",
- "Hola, le escribo por {negocio}. Preparé una página web de muestra para que vea cómo se vería la suya. Está aquí: {link}. Si le parece, la activamos con su dominio.",
- "¿Cómo está? Vi su negocio en Google y le preparé una muestra de página web, sin costo. Puede verla aquí: {link}. Me cuenta qué le parece.",
- "Buen día. Soy {vendedor}, y le preparé una página web de muestra para {negocio}. Se ve así: {link}. Si le gusta, la dejamos lista con sus fotos y su dominio propio."
+ "{saludo} Le escribo porque vi su negocio en Google y le armé una página web de muestra con la información que ya tiene publicada. Puede verla aquí: {link}. Si le interesa, la dejo lista con sus propias fotos y su dominio, sin compromiso.",
+ "{saludo} Encontré {negocio} en Google y, como vi que tiene buena reputación, le preparé una página web de muestra para que vea cómo quedaría. Está aquí: {link}. Dígame si le gusta y conversamos.",
+ "{saludo} Soy {vendedor}. Le hice una muestra de página web para {negocio} con lo que aparece en Google. Puede abrirla desde el celular: {link}. Cualquier consulta me escribe, sin apuro.",
+ "{saludo} Vi que {negocio} tiene buenas reseñas, así que le preparé una página web de muestra con sus datos. La puede ver aquí: {link}. Si le convence, la activo con sus fotos y su propio dominio.",
+ "{saludo} Le armé una página de muestra para {negocio} con la información pública de Google. Échele un ojo aquí: {link}. Si quiere, la dejamos lista en pocos días.",
+ "{saludo} Le escribo por {negocio}. Preparé una página web de muestra para que vea cómo se vería la suya. Está aquí: {link}. Si le parece, la activamos con su dominio.",
+ "{saludo} Vi su negocio en Google y le preparé una muestra de página web, sin costo. Puede verla aquí: {link}. Me cuenta qué le parece.",
+ "{saludo} Soy {vendedor}, y le preparé una página web de muestra para {negocio}. Se ve así: {link}. Si le gusta, la dejamos lista con sus fotos y su dominio propio."
 ];
 function waNumber(t){var d=String(t||"").replace(/\\D/g,"");if(!d)return "";if(d.indexOf("51")===0&&d.length>=11)return d;if(d[0]==="0")d="51"+d.slice(1);else if(d.length<=9)d="51"+d;return d}
-var lastMsg=-1;
 function cap(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1)}
-function buildMsg(r){var i=Math.floor(Math.random()*MSGS.length);if(MSGS.length>1&&i===lastMsg)i=(i+1)%MSGS.length;lastMsg=i;var t=MSGS[i];return t.replace(/\{vendedor\}/g,cap(r.vendedor)).replace(/\{negocio\}/g,r.negocio||"").replace(/\{link\}/g,BASE+"/demo/"+r._slug+"/")}
+var lastMsg=-1;
+function buildMsg(r){
+  var i=Math.floor(Math.random()*MSGS.length);if(MSGS.length>1&&i===lastMsg)i=(i+1)%MSGS.length;lastMsg=i;
+  var saludo=(r.contacto?("Hola "+r.contacto+","):"Hola,");
+  return MSGS[i].replace(/\{saludo\}/g,saludo).replace(/\{vendedor\}/g,cap(r.vendedor)).replace(/\{negocio\}/g,r.negocio||"").replace(/\{link\}/g,BASE+"/demo/"+r._slug+"/");
+}
 var DATA=[];
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act=wa]");if(!b)return;
@@ -272,7 +279,8 @@ function render(){
     var el=document.createElement("div");el.className="card";
     el.innerHTML=
       '<div><h3>'+esc(r.negocio)+'</h3>'+
-      '<p class="meta">'+esc(RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?" · ⭐ "+esc(r.rating):"")+(r.resenas?" ("+esc(r.resenas)+")":"")+(r.web_actual?" · con web":" · sin web")+'</p>'+
+      '<p class="meta">'+esc(r.categoria||RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?" · ⭐ "+esc(r.rating):"")+(r.resenas?" ("+esc(r.resenas)+")":"")+(r.web_actual?" · con web":" · sin web")+'</p>'+
+      ((r.contacto||r.canal||r.proximo_contacto)?'<p class="meta">'+(r.contacto?"👤 "+esc(r.contacto)+" ":"")+(r.canal?"· "+esc(r.canal)+" ":"")+(r.proximo_contacto?"· próximo: "+esc(r.proximo_contacto):"")+'</p>':'')+
       '<div class="row2"><span class="tag">'+esc(r.estado||"Nuevo")+'</span><span class="v '+esc(r.vendedor||"")+'">👤 '+esc(cap(r.vendedor)||"—")+'</span>'+
       (gen?'<a href="'+url+'" target="_blank">abrir demo →</a>':'<span class="meta">sin demo</span>')+
       (waN?'<button class="wa" data-act="wa" data-slug="'+esc(r._slug)+'">Escribir por WhatsApp</button>':'')+
@@ -325,7 +333,6 @@ const raw = toObjects(parseCSV(csvText));
 const merged = mergeRows(raw);
 merged.sort((a, b) => priority(b) - priority(a) || (Number(digits(b.resenas)) || 0) - (Number(digits(a.resenas)) || 0));
 
-// Limpia outputs
 await rm(DEMO_DIR, { recursive: true, force: true });
 for (const e of await readdir(DOCS).catch(() => [])) {
   if (e === "demo" || e === "index.html") continue;
@@ -334,14 +341,12 @@ for (const e of await readdir(DOCS).catch(() => [])) {
 await mkdir(DEMO_DIR, { recursive: true });
 
 let n = 0;
-const listos = [];
 for (const row of merged) {
   if (isNo(row.generar)) continue;
   const g = await renderDemo(row);
-  if (g) { g.prioridad = priority(row); listos.push(g); n++; console.log(`  ✓ ${g.emoji} ${g.slug} [p${g.prioridad}] (${row.vendedor || config.vendedorDefault})`); }
+  if (g) { n++; console.log(`  ✓ ${g.emoji} ${g.slug} [p${priority(row)}] (${row.vendedor || config.vendedorDefault})`); }
 }
 
-// Panel + neutra
 const panelDir = join(DOCS, CODIGO);
 await mkdir(panelDir, { recursive: true });
 await writeFile(join(panelDir, "index.html"), panel(merged), "utf8");
