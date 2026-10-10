@@ -53,7 +53,7 @@
     if (!form) return;
     var aviso = document.getElementById("form-error");
     var campos = form.querySelectorAll("input[required], textarea[required]");
-    var wa = "{{whatsapp}}"; // número de {{negocio}} (reemplazar si cambia)
+    var wa = "{{whatsapp}}"; // WhatsApp del vendedor (se reemplaza al generar la demo)
 
     function nombreDe(campo) {
       var label = campo.closest("label");

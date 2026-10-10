@@ -14,7 +14,7 @@ generator/
 data/empresas.csv     plantilla del Sheet (una sola pestaña)
 tools/
   panel.mjs           tablero local (opcional)
-  tokenize.mjs        (ya ejecutado) mete los tokens {{...}} en las plantillas
+  refresh.gs          (opcional) auto-refresco al editar el Sheet (Apps Script)
 docs/                 salida que sirve GitHub Pages
   index.html          portada neutra (no revela nada)
   <codigo>/index.html PANEL compartido (solo con el código)

@@ -14,10 +14,10 @@
   <meta property="og:site_name" content="{{negocio}}">
   <meta property="og:title" content="{{negocio}} — Taller automotriz en {{ciudad}}">
   <meta property="og:description" content="Mantenimiento, piezas, grúa 24/7, pintado, off road y alineamiento 3D. ¡La mejor opción!">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&h=630&fit=crop&q=70&fm=jpg">
+  <meta property="og:image" content="https://images.pexels.com/photos/3806249/pexels-photo-3806249.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630&fit=crop">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230E1218'/%3E%3Ctext%20x='32'%20y='44'%20font-family='Arial,sans-serif'%20font-size='32'%20font-weight='bold'%20fill='%231E6BFF'%20text-anchor='middle'%3ETK%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230E1218'/%3E%3Ctext%20x='32'%20y='44'%20font-family='Arial,sans-serif'%20font-size='30'%20font-weight='bold'%20fill='%231E6BFF'%20text-anchor='middle'%3E{{negocio_mark}}%3C/text%3E%3C/svg%3E">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
     "@type": "AutoRepair",
     "name": "{{negocio}}",
     "description": "Taller automotriz en {{ciudad}}: mantenimiento de vehículos, venta de piezas, grúa, planchado y pintura, modificaciones off road y alineamiento computarizado 3D.",
-    "image": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&q=70",
+    "image": "https://images.pexels.com/photos/3806249/pexels-photo-3806249.jpeg?auto=compress&cs=tinysrgb&w=1200",
     "address": { "@type": "PostalAddress", "streetAddress": "{{zona}}", "addressLocality": "{{ciudad}}", "addressRegion": "Lima", "addressCountry": "PE" },
     "areaServed": "{{ciudad}}, Chosica, Lima Este",
     "telephone": "{{telefono}}",
@@ -51,11 +51,12 @@
 
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-  <!-- Barra superior (de la web original) -->
+  <!-- Barra superior -->
   <div class="promo">
     <span>Consulta nuestros paquetes y promociones</span>
     <a href="#productos">Ver productos →</a>
     <span class="promo__tag">página de muestra</span>
+    <a href="https://wa.me/{{whatsapp}}?text=Hola%2C%20vi%20la%20p%C3%A1gina%20de%20muestra%20de%20{{negocio_url}}%20y%20quiero%20activarla%20con%20{{vendedor_nombre}}." target="_blank" rel="noopener">Activar con {{vendedor_nombre}} →</a>
   </div>
 
   <!-- Header -->
@@ -111,37 +112,18 @@
           </ul>
         </div>
         <div class="hero__media">
-          <div class="hero__frame hero__frame--video">
-            <div class="hero__slide is-active">
-              <video class="hero__video" poster="img/hero-1.jpg" muted loop playsinline preload="metadata" aria-label="{{negocio}}: taller automotriz">
-                <source src="video/hero-1.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="hero__slide">
-              <video class="hero__video" poster="img/hero-2.jpg" muted loop playsinline preload="none" aria-label="{{negocio}}: trabajo en el taller">
-                <source src="video/hero-2.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="hero__controls">
-              <button class="vbtn" id="v-play" type="button" aria-label="Pausar video" aria-pressed="false">
-                <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-                <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-              <button class="vbtn" id="v-mute" type="button" aria-label="Activar sonido" aria-pressed="true">
-                <svg class="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m17 9 4 6M21 9l-4 6"/></svg>
-                <svg class="i-soundon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 8.5a5 5 0 0 1 0 7M19 6a8 8 0 0 1 0 12"/></svg>
-              </button>
-            </div>
+          <div class="hero__frame hero__frame--img">
+            <img class="hero__img" src="img/hero.jpg" alt="{{negocio}}: mecánico trabajando en un vehículo" width="1600" height="1067" loading="eager" decoding="async">
           </div>
           <div class="hero__card">
-            <span class="hero__card-num">TK</span>
-            <span class="hero__card-txt">Taller automotriz<br>y venta de piezas</span>
+            <span class="hero__card-num">{{negocio_mark}}</span>
+            <span class="hero__card-txt">Taller automotriz<br>y venta de repuestos</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- MARCAS (logos reales de la web original) -->
+    <!-- MARCAS -->
     <section class="marcas" aria-label="Marcas que atendemos">
       <div class="marcas__inner">
         <div class="marcas__fila">
@@ -186,7 +168,7 @@
       </div>
     </section>
 
-    <!-- NOSOTROS (de la página /about/ original) -->
+    <!-- NOSOTROS -->
     <section class="nosotros" id="nosotros">
       <div class="wrap nosotros__grid">
         <div class="nosotros__copy">
@@ -194,7 +176,7 @@
           <h2 class="head__title">Acerca de nosotros</h2>
           <p>En <strong>{{negocio}}</strong> cuidamos tu vehículo con la precisión, tecnología y respaldo que merece. Somos un taller automotriz multimarca especializado en mantenimiento preventivo, diagnóstico computarizado, reparación de motores, cajas de cambio, electrónica automotriz y revisión integral de autos y camionetas.</p>
           <p>Nuestro equipo trabaja con compromiso, experiencia y repuestos de calidad para dar soluciones confiables, rápidas y seguras. Más que reparar vehículos, buscamos construir relaciones de confianza con cada cliente, con una atención transparente de principio a fin.</p>
-          <span class="sello">Afiliados a <strong>Bosch Car Service</strong></span>
+          <span class="sello">Especialistas <strong>multimarca</strong></span>
         </div>
         <div class="nosotros__datos">
           <div class="dato"><span class="dato__n">+10</span><span class="dato__t">años en el mercado trabajando para ti</span></div>
@@ -209,50 +191,50 @@
     <section class="productos" id="productos">
       <div class="wrap">
         <header class="head">
-          <p class="eyebrow eyebrow--dark"><span></span>Nuestros productos</p>
-          <h2 class="head__title">Aceites y repuestos</h2>
-          <p class="head__sub">Consúltanos por stock y por el que le corresponde a tu motor.</p>
+          <p class="eyebrow eyebrow--dark"><span></span>Repuestos y lubricantes</p>
+          <h2 class="head__title">Piezas, lubricantes y accesorios</h2>
+          <p class="head__sub">Consúltanos por stock y el que le corresponde a tu vehículo.</p>
         </header>
 
         <div class="productos__grid">
           <article class="prod">
             <div class="prod__img prod__img--a" aria-hidden="true"></div>
-            <span class="prod__tag">Aceite de caja</span>
-            <h3>Aceite de caja ATF +4 Mopar LT</h3>
-            <p class="prod__desc">Por litro</p>
+            <span class="prod__tag">Lubricantes</span>
+            <h3>Aceite de motor</h3>
+            <p class="prod__desc">Mineral, semisintético y sintético</p>
             <div class="prod__pie">
-              <span class="prod__precio">S/ 48.00</span>
-              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20el%20Aceite%20ATF%20%2B4%20Mopar%20LT." target="_blank" rel="noopener">Cotizar</a>
+              <span class="prod__precio">A consultar</span>
+              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20aceite%20para%20mi%20veh%C3%ADculo." target="_blank" rel="noopener">Cotizar</a>
             </div>
           </article>
           <article class="prod">
             <div class="prod__img prod__img--b" aria-hidden="true"></div>
-            <span class="prod__tag">Aceite de caja</span>
-            <h3>Aceite de caja CVT +4 Mopar LT</h3>
-            <p class="prod__desc">Por litro</p>
+            <span class="prod__tag">Filtros</span>
+            <h3>Filtros de aire, aceite y combustible</h3>
+            <p class="prod__desc">Originales y alternativos</p>
             <div class="prod__pie">
-              <span class="prod__precio">S/ 48.00</span>
-              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20el%20Aceite%20CVT%20%2B4%20Mopar%20LT." target="_blank" rel="noopener">Cotizar</a>
+              <span class="prod__precio">A consultar</span>
+              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20filtros%20para%20mi%20veh%C3%ADculo." target="_blank" rel="noopener">Cotizar</a>
             </div>
           </article>
           <article class="prod">
             <div class="prod__img prod__img--c" aria-hidden="true"></div>
-            <span class="prod__tag">Aceite de motor</span>
-            <h3>Aceite de motor 5W20 Motorcraft LT</h3>
-            <p class="prod__desc">Por litro</p>
+            <span class="prod__tag">Frenos</span>
+            <h3>Pastillas y discos de freno</h3>
+            <p class="prod__desc">Para autos y camionetas</p>
             <div class="prod__pie">
-              <span class="prod__precio">S/ 42.00</span>
-              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20el%20Aceite%205W20%20Motorcraft%20LT." target="_blank" rel="noopener">Cotizar</a>
+              <span class="prod__precio">A consultar</span>
+              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20frenos%20para%20mi%20veh%C3%ADculo." target="_blank" rel="noopener">Cotizar</a>
             </div>
           </article>
           <article class="prod">
             <div class="prod__img prod__img--d" aria-hidden="true"></div>
-            <span class="prod__tag">Aceite de motor</span>
-            <h3>Aceite de motor 5W30 Mopar LT</h3>
-            <p class="prod__desc">Por litro · consultar stock</p>
+            <span class="prod__tag">Baterías</span>
+            <h3>Baterías y servicio de carga</h3>
+            <p class="prod__desc">Prueba y cambio</p>
             <div class="prod__pie">
-              <span class="prod__precio">S/ 42.00</span>
-              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20el%20Aceite%205W30%20Mopar%20LT." target="_blank" rel="noopener">Cotizar</a>
+              <span class="prod__precio">A consultar</span>
+              <a class="prod__btn" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20quiero%20cotizar%20una%20bater%C3%ADa." target="_blank" rel="noopener">Cotizar</a>
             </div>
           </article>
         </div>
@@ -292,7 +274,7 @@
           <article class="svc">
             <span class="svc__num">03</span>
             <span class="svc__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17V9l4-4h9l1 4h1a2 2 0 0 1 2 2v6"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg></span>
-            <h3>Grúa {{negocio}}</h3>
+            <h3>Grúa y auxilio mecánico</h3>
             <p>Tu carro varado se traslada cuando lo necesites. Coordinamos el recojo rápido en {{ciudad}} y alrededores.</p>
             <a class="svc__cta" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20necesito%20gr%C3%BAa%20para%20mi%20veh%C3%ADculo." target="_blank" rel="noopener">Pedir grúa →</a>
           </article>
@@ -350,7 +332,7 @@
             <ul class="info">
               <li>
                 <span class="info__ico" aria-hidden="true">✆</span>
-                <div><b>WhatsApp</b><a href="https://wa.me/{{whatsapp}}" target="_blank" rel="noopener">{{telefono}}</a><a href="https://wa.me/{{whatsapp}}" target="_blank" rel="noopener">{{telefono}}</a></div>
+                <div><b>WhatsApp</b><a href="https://wa.me/{{whatsapp}}" target="_blank" rel="noopener">{{telefono}}</a></div>
               </li>
               <li>
                 <span class="info__ico" aria-hidden="true">☎</span>
@@ -370,7 +352,7 @@
         </div>
 
         <div class="contacto__mapa">
-          <iframe title="Ubicación de {{negocio}} en el mapa" src="https://www.google.com/maps?q={{negocio_url}}%20Tukanes%20CAR%20WASH%20Ramiro%20Prial%C3%A9%20{{ciudad}}&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <iframe title="Ubicación de {{negocio}} en el mapa" src="https://www.google.com/maps?q={{direccion_url}}&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </section>
@@ -407,8 +389,7 @@
         <h3>Contacto</h3>
         <a href="mailto:{{email}}">{{email}}</a>
         <a href="https://wa.me/{{whatsapp}}" target="_blank" rel="noopener">WhatsApp {{telefono}}</a>
-        <a href="https://wa.me/{{whatsapp}}" target="_blank" rel="noopener">WhatsApp {{telefono}}</a>
-        <a href="tel:{{telefono_tel}}">Teléfono fijo: {{telefono}}</a>
+        <a href="tel:{{telefono_tel}}">Llamar: {{telefono}}</a>
       </div>
     </div>
 

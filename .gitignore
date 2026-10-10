@@ -2,3 +2,18 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+
+# Carpeta local de TK Motors (no versionar, no publicar)
+tk-motors/
+
+# Documentos personales / de planificación (no van al repo)
+PENDIENTES.md
+GUIA-EQUIPO.md
+AUDITORIA-TKMOTORS.md
+CALCULADORA-PRECIOS.md
+calculadora-precios.html
+GUIA-VENDER-PAGINAS-WEB.md
+PLANTILLA-LEADS.csv
+
+# Script de un solo uso (ya ejecutado; contiene refs de TK)
+tools/tokenize.mjs
