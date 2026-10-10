@@ -1,0 +1,13 @@
+{
+  "name": "webitas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Generador de demos por rubro con seguimiento (WEBITAS)",
+  "scripts": {
+    "build": "node generator/build.mjs",
+    "panel": "node tools/panel.mjs",
+    "tokenize": "node tools/tokenize.mjs",
+    "deploy": "node generator/build.mjs && git add -A && git commit -m \"build: regenerar demos\" && git push"
+  }
+}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de precios — Páginas web</title>
+<style>
+  :root {
+    --bg: #f4efe6;
+    --surface: #fffbf5;
+    --surface-2: #ebe3d4;
+    --text: #1a2a22;
+    --muted: #5a6a62;
+    --line: #ded4c4;
+    --primary: #2f4a3c;
+    --accent: #9e462d;
+    --accent-soft: #f0dfd6;
+    --ok: #2f6b4f;
+    --shadow: 0 18px 40px -24px rgba(36, 56, 46, 0.35);
+    --radius: 16px;
+    --font: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.5;
+    padding: clamp(16px, 4vw, 48px);
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  header h1 {
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem);
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+  header p { margin: 0 0 24px; color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: clamp(18px, 3vw, 28px);
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field { margin-bottom: 16px; }
+  input, select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    font: inherit;
+    color: inherit;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .check {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.9rem; font-weight: 500; margin-top: 4px;
+  }
+  .check input { width: 18px; min-height: 18px; accent-color: var(--accent); }
+  .hint { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+  .result-line {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 9px 0; border-bottom: 1px dashed var(--line);
+    font-size: 0.95rem;
+  }
+  .result-line span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .total {
+    margin-top: 14px; padding: 16px 18px; border-radius: 12px;
+    background: linear-gradient(150deg, var(--primary), #1f3329);
+    color: #fff;
+  }
+  .total .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+  .total .value { font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.3rem); font-weight: 700; letter-spacing: -0.02em; }
+  .profit { color: var(--ok); }
+  .band {
+    margin-top: 14px; font-size: 0.85rem; color: var(--muted);
+    background: var(--surface-2); border-radius: 10px; padding: 10px 12px;
+  }
+  .band strong { color: var(--text); }
+  .warn { color: var(--accent); font-weight: 600; display: none; margin-top: 8px; font-size: 0.85rem; }
+  button {
+    margin-top: 16px; width: 100%; min-height: 48px; cursor: pointer;
+    font: inherit; font-weight: 700; color: #fff; background: var(--accent);
+    border: 0; border-radius: 999px; transition: filter 0.2s ease;
+  }
+  button:hover { filter: brightness(1.07); }
+  .foot { margin-top: 22px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Calculadora de precios — páginas web</h1>
+    <p>Estima el precio de venta de un proyecto en soles (Perú). Ajusta horas, tarifa y margen.</p>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-label="Datos del proyecto">
+      <div class="field">
+        <label for="preset">Tipo de proyecto</label>
+        <select id="preset">
+          <option value="landing">Landing / Esencial</option>
+          <option value="corporativa">Web corporativa / Profesional</option>
+          <option value="reservas">Reservas / Premium</option>
+          <option value="ecommerce">Tienda / Ecommerce</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="horas">Horas estimadas</label>
+          <input id="horas" type="number" min="0" step="1" value="10" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="tarifa">Tarifa por hora (S/)</label>
+          <input id="tarifa" type="number" min="0" step="5" value="70" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="directos">Costos directos (S/)</label>
+          <input id="directos" type="number" min="0" step="10" value="100" inputmode="decimal">
+          <p class="hint">Dominio + hosting + licencias.</p>
+        </div>
+        <div class="field">
+          <label for="margen">Margen deseado (%)</label>
+          <input id="margen" type="number" min="0" step="5" value="50" inputmode="numeric">
+        </div>
+      </div>
+
+      <label class="check" for="igv">
+        <input id="igv" type="checkbox">
+        Añadir IGV (18%)
+      </label>
+    </section>
+
+    <section class="card" aria-label="Resultado" aria-live="polite">
+      <div class="result-line"><span>Trabajo (horas × tarifa)</span><span id="r-trabajo">S/ 0</span></div>
+      <div class="result-line"><span>Costos directos</span><span id="r-directos">S/ 0</span></div>
+      <div class="result-line"><span>Costo total</span><span id="r-costo">S/ 0</span></div>
+      <div class="result-line"><span>Ganancia (margen)</span><span id="r-ganancia" class="profit">S/ 0</span></div>
+
+      <div class="total">
+        <div>
+          <div class="label">Precio de venta <span id="igv-note">(sin IGV)</span></div>
+          <div class="value" id="r-precio">S/ 0</div>
+        </div>
+      </div>
+
+      <div class="band" id="band"></div>
+      <p class="warn" id="warn">Margen por debajo del 30%: no conviene cerrar así.</p>
+
+      <button type="button" id="copiar">Copiar resumen</button>
+    </section>
+  </div>
+
+  <p class="foot">Regla: nunca vendas por debajo de <strong>Costo total × 1.30</strong>. Si el cliente no llega, reduce el alcance, no el precio.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var PRESETS = {
+    landing:      { horas: 10, tarifa: 70, directos: 100, band: [700, 1000, 1200] },
+    corporativa:  { horas: 30, tarifa: 70, directos: 150, band: [1500, 2000, 2800] },
+    reservas:     { horas: 45, tarifa: 75, directos: 180, band: [2800, 3500, 4500] },
+    ecommerce:    { horas: 70, tarifa: 80, directos: 300, band: [3500, 5000, 8000] },
+    custom:       { band: null }
+  };
+
+  var fmt = new Intl.NumberFormat("es-PE", {
+    style: "currency", currency: "PEN", maximumFractionDigits: 0
+  });
+  function money(n) { return fmt.format(Math.max(0, Math.round(n))); }
+
+  function calc() {
+    var horas = parseFloat($("horas").value) || 0;
+    var tarifa = parseFloat($("tarifa").value) || 0;
+    var directos = parseFloat($("directos").value) || 0;
+    var margen = (parseFloat($("margen").value) || 0) / 100;
+    var conIgv = $("igv").checked;
+
+    var trabajo = horas * tarifa;
+    var costo = trabajo + directos;
+    var ganancia = costo * margen;
+    var precio = costo + ganancia;
+    var final = conIgv ? precio * 1.18 : precio;
+
+    $("r-trabajo").textContent = money(trabajo);
+    $("r-directos").textContent = money(directos);
+    $("r-costo").textContent = money(costo);
+    $("r-ganancia").textContent = money(ganancia);
+    $("r-precio").textContent = money(final);
+    $("igv-note").textContent = conIgv ? "(con IGV 18%)" : "(sin IGV)";
+
+    $("warn").style.display = margen < 0.30 ? "block" : "none";
+
+    var preset = PRESETS[$("preset").value];
+    var band = $("band");
+    if (preset && preset.band) {
+      band.innerHTML = "Rango de mercado para este paquete: <strong>" +
+        money(preset.band[0]) + " – " + money(preset.band[2]) + "</strong> " +
+        "(recomendado " + money(preset.band[1]) + ").";
+    } else {
+      band.textContent = "Sin referencias: define tu precio según horas, tarifa y margen.";
+    }
+  }
+
+  $("preset").addEventListener("change", function () {
+    var p = PRESETS[this.value];
+    if (p && p.horas !== undefined) {
+      $("horas").value = p.horas;
+      $("tarifa").value = p.tarifa;
+      $("directos").value = p.directos;
+    }
+    calc();
+  });
+
+  ["horas", "tarifa", "directos", "margen", "igv"].forEach(function (id) {
+    $(id).addEventListener("input", calc);
+    $(id).addEventListener("change", calc);
+  });
+
+  $("copiar").addEventListener("click", function () {
+    var txt =
+      "Presupuesto de página web\n" +
+      "Tipo: " + $("preset").options[$("preset").selectedIndex].text + "\n" +
+      "Horas: " + $("horas").value + " h × S/ " + $("tarifa").value + "/h\n" +
+      "Costos directos: " + money(parseFloat($("directos").value) || 0) + "\n" +
+      "Margen: " + $("margen").value + "%\n" +
+      "PRECIO: " + $("r-precio").textContent + " " + $("igv-note").textContent;
+    navigator.clipboard.writeText(txt).then(function () {
+      var b = $("copiar");
+      var old = b.textContent;
+      b.textContent = "¡Copiado!";
+      setTimeout(function () { b.textContent = old; }, 1500);
+    });
+  });
+
+  calc();
+})();
+</script>
+</body>
+</html>

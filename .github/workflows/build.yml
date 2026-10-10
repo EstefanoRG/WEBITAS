@@ -1,0 +1,50 @@
+name: Build & Deploy demos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Cada 6 horas (por si editas el Google Sheet y quieres que se refleje solo)
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generar demos
+        env:
+          # Opcional: si defines el secreto SHEET_CSV_URL, el generador usa Google Sheets.
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+        run: node generator/build.mjs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

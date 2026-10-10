@@ -1,0 +1,29 @@
+{
+  "siteName": "WEBITAS · Demos",
+  "baseUrl": "https://estefanorg.github.io/WEBITAS",
+  "noindex": true,
+  "counter": {
+    "namespace": "webitas-estefanorg",
+    "hit": "https://abacus.jasoncameron.dev/hit",
+    "get": "https://abacus.jasoncameron.dev/get"
+  },
+  "vendedorDefault": "estefano",
+  "vendedores": {
+    "estefano": {
+      "nombre": "Estefano",
+      "whatsapp": "51935634896",
+      "telefono": "+51 935 634 896"
+    },
+    "luigui": {
+      "nombre": "Luigui",
+      "whatsapp": "51981202879",
+      "telefono": "+51 981 202 879"
+    }
+  },
+  "rubros": {
+    "veterinaria": { "plantilla": "veterinaria", "etiqueta": "Veterinaria", "emoji": "🐾" },
+    "dental": { "plantilla": "dental", "etiqueta": "Clínica dental", "emoji": "🦷" },
+    "taller": { "plantilla": "taller", "etiqueta": "Taller automotriz", "emoji": "🔧" },
+    "interiores": { "plantilla": "interiores", "etiqueta": "Diseño de interiores", "emoji": "🛋️" }
+  }
+}
