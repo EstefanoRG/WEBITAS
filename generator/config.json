@@ -1,6 +1,7 @@
 {
-  "siteName": "WEBITAS · Demos",
+  "siteName": "WEBITAS",
   "baseUrl": "https://estefanorg.github.io/WEBITAS",
+  "codigo": "x7q2k9p4",
   "noindex": true,
   "counter": {
     "namespace": "webitas-estefanorg",
