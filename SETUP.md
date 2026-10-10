@@ -9,14 +9,14 @@ Una fila por negocio, **una sola pestaña**. Orden exacto (28 columnas):
 | 1 | `negocio` | Sí | Nombre. De aquí sale el enlace: `/demo/<nombre>/` |
 | 2 | `rubro` | Sí | `veterinaria` · `dental` · `taller` · `interiores` (elige la plantilla) |
 | 3 | `categoria` | No | Categoría de Google (texto libre, para el panel) |
-| 4 | `contacto` | No | Nombre de la persona/dueño → personaliza el mensaje (“Hola Rosa,”) |
+| 4 | `contacto` | No | Nombre de la persona. **No se usa** en el mensaje (queda para tus notas) |
 | 5 | `direccion` | No | Dirección completa |
 | 6 | `zona` | No | Distrito/zona |
 | 7 | `ciudad` | No | Ciudad |
 | 8 | `maps_url` | No | Enlace a su ficha de Google Maps |
 | 9 | `telefono` | **Sí** | Número al que se manda el WhatsApp (y **dedupe**) |
 | 10 | `email` | No | Correo |
-| 11 | `horarios` | No | Horario (lo usan veterinaria/dental) |
+| 11 | `horarios` | No | Horario (lo usan veterinaria/dental); si vacío, no aparece |
 | 12 | `instagram` | No | Usuario |
 | 13 | `instagram_url` | No | URL |
 | 14 | `facebook` | No | URL |

@@ -152,7 +152,7 @@ const cap = (s) => { s = String(s || ""); return s.charAt(0).toUpperCase() + s.s
 function panel(rows) {
   const snapshot = rows.map((r) => ({
     _slug: r._slug, negocio: r.negocio || "", rubro: r.rubro || "",
-    categoria: r.categoria || "", ciudad: r.ciudad || "", contacto: r.contacto || "",
+    categoria: r.categoria || "", ciudad: r.ciudad || "",
     telefono: r.telefono || "", rating: r.rating || "", resenas: r.resenas || "",
     web_actual: r.web_actual || "", canal: r.canal || "", proximo_contacto: r.proximo_contacto || "",
     ultimo_contacto: r.ultimo_contacto || "",
@@ -239,23 +239,18 @@ function normalize(rows){
 }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var MSGS=[
- "{saludo} Le escribo porque vi su negocio en Google y le armé una página web de muestra con la información que ya tiene publicada. Puede verla aquí: {link}. Si le interesa, la dejo lista con sus propias fotos y su dominio, sin compromiso.",
- "{saludo} Encontré {negocio} en Google y, como vi que tiene buena reputación, le preparé una página web de muestra para que vea cómo quedaría. Está aquí: {link}. Dígame si le gusta y conversamos.",
- "{saludo} Soy {vendedor}. Le hice una muestra de página web para {negocio} con lo que aparece en Google. Puede abrirla desde el celular: {link}. Cualquier consulta me escribe, sin apuro.",
- "{saludo} Vi que {negocio} tiene buenas reseñas, así que le preparé una página web de muestra con sus datos. La puede ver aquí: {link}. Si le convence, la activo con sus fotos y su propio dominio.",
- "{saludo} Le armé una página de muestra para {negocio} con la información pública de Google. Échele un ojo aquí: {link}. Si quiere, la dejamos lista en pocos días.",
- "{saludo} Le escribo por {negocio}. Preparé una página web de muestra para que vea cómo se vería la suya. Está aquí: {link}. Si le parece, la activamos con su dominio.",
- "{saludo} Vi su negocio en Google y le preparé una muestra de página web, sin costo. Puede verla aquí: {link}. Me cuenta qué le parece.",
- "{saludo} Soy {vendedor}, y le preparé una página web de muestra para {negocio}. Se ve así: {link}. Si le gusta, la dejamos lista con sus fotos y su dominio propio."
+ "Hola, le escribo por {negocio}. Vi su {tipo} en Google y le preparé una página web de muestra con su información. ¿Usted es el dueño o alguien del equipo? Si no, ¿me podría pasar con el encargado? La puede ver aquí: {link}. Gracias.",
+ "Buenas tardes. Le escribo por {negocio}. Preparé una página web de muestra para su {tipo}, sin costo, para que vean cómo se vería. ¿Es usted el dueño o trabaja ahí? Si no, ¿me podría comunicar con el encargado? Aquí puede verla: {link}. Gracias.",
+ "Hola, ¿cómo está? Le escribo por {negocio}. Vi su {tipo} en Google y le armé una página web de muestra. ¿Sería usted el dueño o alguien del equipo? Si no, ¿me podría pasar con el encargado para mostrársela? Puede verla aquí: {link}. Gracias.",
+ "Buenas. Soy {vendedor} y hago páginas web para negocios. Le escribo por {negocio}: le dejé una página web de muestra con lo que aparece en Google. ¿Usted es el dueño o una persona del equipo? Si no, ¿me podría comunicar con el encargado? Aquí está: {link}. Gracias, sin compromiso.",
+ "Hola, buenas tardes. Le escribo por {negocio}. ¿Sería usted el dueño o alguien del equipo? Le preparé una página web de muestra para su {tipo}. Si no es usted, ¿me podría pasar con el encargado? La puede ver aquí: {link}. Gracias.",
+ "Buenas. Le escribo por {negocio}. Vi su {tipo} en Google y le preparé una página web de muestra. ¿Es usted el dueño o alguien del equipo? Si no, ¿me podría comunicar con el encargado? Aquí puede verla: {link}. Gracias."
 ];
+var TIPOS={veterinaria:"veterinaria",dental:"clínica",taller:"taller",interiores:"estudio"};
 function waNumber(t){var d=String(t||"").replace(/\\D/g,"");if(!d)return "";if(d.indexOf("51")===0&&d.length>=11)return d;if(d[0]==="0")d="51"+d.slice(1);else if(d.length<=9)d="51"+d;return d}
 function cap(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1)}
 var lastMsg=-1;
-function buildMsg(r){
-  var i=Math.floor(Math.random()*MSGS.length);if(MSGS.length>1&&i===lastMsg)i=(i+1)%MSGS.length;lastMsg=i;
-  var saludo=(r.contacto?("Hola "+r.contacto+","):"Hola,");
-  return MSGS[i].replace(/\{saludo\}/g,saludo).replace(/\{vendedor\}/g,cap(r.vendedor)).replace(/\{negocio\}/g,r.negocio||"").replace(/\{link\}/g,BASE+"/demo/"+r._slug+"/");
-}
+function buildMsg(r){var i=Math.floor(Math.random()*MSGS.length);if(MSGS.length>1&&i===lastMsg)i=(i+1)%MSGS.length;lastMsg=i;return MSGS[i].replace(/\{vendedor\}/g,cap(r.vendedor)).replace(/\{negocio\}/g,r.negocio||"").replace(/\{tipo\}/g,TIPOS[r.rubro]||"negocio").replace(/\{link\}/g,BASE+"/demo/"+r._slug+"/")}
 var DATA=[];
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-act=wa]");if(!b)return;
@@ -280,7 +275,7 @@ function render(){
     el.innerHTML=
       '<div><h3>'+esc(r.negocio)+'</h3>'+
       '<p class="meta">'+esc(r.categoria||RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?" · ⭐ "+esc(r.rating):"")+(r.resenas?" ("+esc(r.resenas)+")":"")+(r.web_actual?" · con web":" · sin web")+'</p>'+
-      ((r.contacto||r.canal||r.proximo_contacto)?'<p class="meta">'+(r.contacto?"👤 "+esc(r.contacto)+" ":"")+(r.canal?"· "+esc(r.canal)+" ":"")+(r.proximo_contacto?"· próximo: "+esc(r.proximo_contacto):"")+'</p>':'')+
+      ((r.canal||r.proximo_contacto)?'<p class="meta">'+(r.canal?"📞 "+esc(r.canal)+" ":"")+(r.proximo_contacto?"· próximo: "+esc(r.proximo_contacto):"")+'</p>':'')+
       '<div class="row2"><span class="tag">'+esc(r.estado||"Nuevo")+'</span><span class="v '+esc(r.vendedor||"")+'">👤 '+esc(cap(r.vendedor)||"—")+'</span>'+
       (gen?'<a href="'+url+'" target="_blank">abrir demo →</a>':'<span class="meta">sin demo</span>')+
       (waN?'<button class="wa" data-act="wa" data-slug="'+esc(r._slug)+'">Escribir por WhatsApp</button>':'')+
