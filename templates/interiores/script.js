@@ -533,3 +533,21 @@
     init();
   }
 })();
+
+/* Ajuste dinamico de --barra-h
+   La barra de venta es fija y su texto puede ocupar dos lineas (moviles
+   estrechos, zoom o "texto grande" del sistema). Sin esto, la altura real
+   supera el valor fijo de --barra-h y la barra tapa el header. */
+(function () {
+  var barra = document.querySelector('.barra-dueno');
+  if (!barra) return;
+  var raiz = document.documentElement;
+  function ajustar() {
+    raiz.style.setProperty('--barra-h', Math.round(barra.getBoundingClientRect().height) + 'px');
+  }
+  if (window.ResizeObserver) { new ResizeObserver(ajustar).observe(barra); }
+  window.addEventListener('resize', ajustar);
+  window.addEventListener('orientationchange', ajustar);
+  window.addEventListener('load', ajustar);
+  ajustar();
+})();
