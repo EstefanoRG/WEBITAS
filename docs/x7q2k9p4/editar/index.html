@@ -94,7 +94,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
 <div id="toast"></div>
 <script>
-var SB={"url":"https://kktinamqdrkzjyzxpctf.supabase.co","tabla":"prospectos","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"};
+var SB={"base":"https://kktinamqdrkzjyzxpctf.supabase.co","tabla":"prospectos","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"};
 var SNAP=[{"id":"","negocio":"Clínica Dental Sonrisa","rubro":"dental","categoria":"Clínica dental","direccion":"Av. Benavides 1234, Miraflores","zona":"Miraflores","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Dental%20Sonrisa%20Miraflores","telefono":"+51 988 222 333","email":"hola@dentalsonrisa.pe","horarios":"Lun a Vie 9:00–19:00","instagram":"dentalsonrisa.pe","instagram_url":"https://instagram.com/dentalsonrisa.pe","facebook":"","web_actual":"","rating":"4.9","resenas":"142","tiene_web":"no","estado":"Contactado","vendedor":"luigui","canal":"WhatsApp","proximo_contacto":"","ultimo_contacto":"2025-10-12","generar":"","notas":"Buena oportunidad","prioridad":8},{"id":"","negocio":"Clínica Veterinaria Patitas","rubro":"veterinaria","categoria":"Veterinaria","direccion":"Av. 24 de Junio Mz 25, VES","zona":"Villa El Salvador","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Patitas%20Villa%20El%20Salvador","telefono":"+51 999 111 222","email":"contacto@patitas.pe","horarios":"Lun a Sáb 9:00–20:00","instagram":"patitas.pe","instagram_url":"https://instagram.com/patitas.pe","facebook":"","web_actual":"","rating":"4.7","resenas":"58","tiene_web":"no","estado":"Nuevo","vendedor":"estefano","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"58 reseñas; solo Facebook; activa","prioridad":8},{"id":"","negocio":"Estudio Casa & Forma","rubro":"interiores","categoria":"Diseño de interiores","direccion":"Av. Perú 880, SMP","zona":"San Martín de Porres","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Estudio%20Casa%20y%20Forma%20SMP","telefono":"+51 966 444 555","email":"hola@casaforma.pe","horarios":"","instagram":"casaforma","instagram_url":"https://instagram.com/casaforma","facebook":"https://facebook.com/casaforma","web_actual":"","rating":"5.0","resenas":"27","tiene_web":"no","estado":"Nuevo","vendedor":"luigui","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"Proyectos residenciales y comerciales","prioridad":7},{"id":"","negocio":"Taller Mecánico El Motor","rubro":"taller","categoria":"Taller mecánico","direccion":"Av. Pachacútec 220, Lurigancho","zona":"Lurigancho","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Taller%20Mecanico%20El%20Motor%20Lurigancho","telefono":"+51 977 333 444","email":"ventas@elmotor.pe","horarios":"Lun a Sáb 8:00–18:00","instagram":"","instagram_url":"","facebook":"","web_actual":"http://elmotor.wixsite.com","rating":"4.4","resenas":"34","tiene_web":"si","estado":"Interesado","vendedor":"estefano","canal":"Llamada","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"Web wix lenta; mostrar demo en persona","prioridad":3},{"id":"","negocio":"Clínica Veterinaria Rex","rubro":"veterinaria","categoria":"Veterinaria","direccion":"Av. Benavides 3390, Surco","zona":"Surco","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Rex%20Surco","telefono":"+51 955 666 777","email":"","horarios":"","instagram":"","instagram_url":"","facebook":"","web_actual":"","rating":"4.2","resenas":"11","tiene_web":"si","estado":"Descartado","vendedor":"estefano","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"no","notas":"Sin demo por ahora","prioridad":2}];
 var RUBROS={"veterinaria":"Veterinaria","dental":"Clínica dental","taller":"Taller automotriz","interiores":"Diseño de interiores"};
 var VEND={"estefano":"Estefano","luigui":"Luigui"};
@@ -112,7 +112,7 @@ async function cargar(){
   DATA=SNAP.slice();
   if(SB.url&&SB.key){
     try{
-      var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(r.ok){DATA=(await r.json()).map(norm);} else {toast("No pude leer Supabase ("+r.status+")",1);}
     }catch(e){toast("Sin conexión a Supabase",1);}
   } else {toast("Supabase no configurado",1);}
@@ -122,7 +122,7 @@ async function cargar(){
 async function patch(id,fields){
   if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
-    var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
     var a=r.ok?await r.json():[];
     if(r.ok&&a.length){toast("Guardado ✓");return true}
     toast("No se guardó (revisa permisos RLS)",1);return false;
@@ -131,7 +131,7 @@ async function patch(id,fields){
 async function insert(row){
   if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
-    var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
     var a=r.ok?await r.json():[];
     if(r.ok&&a.length){return true}
     toast("No se pudo agregar ("+r.status+")",1);return false;

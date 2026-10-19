@@ -255,7 +255,7 @@ a{color:var(--accent)}
 </div>
 <script>
 var SNAP=${JSON.stringify(snapshot)};
-var SB={url:${JSON.stringify((config.supabase && config.supabase.url) || "")},tabla:${JSON.stringify((config.supabase && config.supabase.tabla) || "prospectos")},key:${JSON.stringify((config.supabase && config.supabase.anonKey) || "")}};
+var SB={base:${JSON.stringify(((config.supabase && config.supabase.url) || "").replace(/\/+$/, ""))},tabla:${JSON.stringify((config.supabase && config.supabase.tabla) || "prospectos")},key:${JSON.stringify((config.supabase && config.supabase.anonKey) || "")}};
 var BASE=${JSON.stringify(config.baseUrl)};
 var CNT=${JSON.stringify((config.counter && config.counter.get) || "")};
 var NS=${JSON.stringify((config.counter && config.counter.namespace) || "")};
@@ -372,7 +372,7 @@ function fillSelects(){
   var data=SNAP;
   if(SB&&SB.url&&SB.key){
     try{
-      var res=await fetch(SB.url.replace(/\/+$/,"")+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      var res=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(res.ok){var rows=await res.json();data=rows.map(function(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o._slug=slugify(o.negocio);o.prioridad=priority(o);o.estado=o.estado||"Nuevo";o.vendedor=(o.vendedor||"").toLowerCase();o.generar=!isNo(o.generar);return o});data.sort(function(a,b){return b.prioridad-a.prioridad||(Number(digits(b.resenas))||0)-(Number(digits(a.resenas))||0)})}
     }catch(e){}
   }
@@ -491,7 +491,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
 <div id="toast"></div>
 <script>
-var SB=${JSON.stringify({ url: (config.supabase && config.supabase.url) || "", tabla: (config.supabase && config.supabase.tabla) || "prospectos", key: (config.supabase && config.supabase.anonKey) || "" })};
+var SB=${JSON.stringify({ base: ((config.supabase && config.supabase.url) || "").replace(/\/+$/, ""), tabla: (config.supabase && config.supabase.tabla) || "prospectos", key: (config.supabase && config.supabase.anonKey) || "" })};
 var SNAP=${JSON.stringify(snap)};
 var RUBROS=${JSON.stringify(Object.fromEntries(Object.entries(config.rubros).map(([k, v]) => [k, v.etiqueta])))};
 var VEND=${JSON.stringify(Object.fromEntries(Object.entries(config.vendedores).map(([k, v]) => [k, v.nombre])))};
@@ -509,7 +509,7 @@ async function cargar(){
   DATA=SNAP.slice();
   if(SB.url&&SB.key){
     try{
-      var r=await fetch(SB.url.replace(/\/+$/,"")+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(r.ok){DATA=(await r.json()).map(norm);} else {toast("No pude leer Supabase ("+r.status+")",1);}
     }catch(e){toast("Sin conexión a Supabase",1);}
   } else {toast("Supabase no configurado",1);}
@@ -519,7 +519,7 @@ async function cargar(){
 async function patch(id,fields){
   if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
-    var r=await fetch(SB.url.replace(/\/+$/,"")+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
     var a=r.ok?await r.json():[];
     if(r.ok&&a.length){toast("Guardado ✓");return true}
     toast("No se guardó (revisa permisos RLS)",1);return false;
@@ -528,7 +528,7 @@ async function patch(id,fields){
 async function insert(row){
   if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
-    var r=await fetch(SB.url.replace(/\/+$/,"")+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
     var a=r.ok?await r.json():[];
     if(r.ok&&a.length){return true}
     toast("No se pudo agregar ("+r.status+")",1);return false;
