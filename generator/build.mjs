@@ -463,7 +463,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <header>
   <h1>✏️ ${esc(config.siteName)} · Gestor</h1>
   <span class="meta" id="cnt">…</span>
-  <a class="pill" href="papelera/">🗑️ Papelera</a>
+  <a class="pill" href="../papelera/">🗑️ Papelera</a>
   <a class="pill" href="../">← Panel</a>
 </header>
 <div class="wrap">
