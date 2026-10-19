@@ -43,6 +43,9 @@ create table if not exists public.prospectos (
 -- Índice para búsquedas por teléfono (el generador deduplica por teléfono).
 create index if not exists prospectos_telefono_idx on public.prospectos (telefono);
 
+-- "Eliminar" es SUAVE: marca la fila y se oculta (no se borra de verdad).
+alter table public.prospectos add column if not exists eliminado boolean not null default false;
+
 -- ---------------------------------------------------------------- seguridad ---
 -- El panel público lee con la clave anónima (igual que hoy: el panel ya muestra los datos).
 -- Escribir (panel local / import) usa la service_role key, que salta RLS.

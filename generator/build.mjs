@@ -196,7 +196,7 @@ const cap = (s) => { s = String(s || ""); return s.charAt(0).toUpperCase() + s.s
 
 function panel(rows) {
   const snapshot = rows.map((r) => ({
-    _slug: r._slug, negocio: r.negocio || "", rubro: r.rubro || "",
+    id: r.id || "", _slug: r._slug, negocio: r.negocio || "", rubro: r.rubro || "",
     categoria: r.categoria || "", ciudad: r.ciudad || "",
     telefono: r.telefono || "", rating: r.rating || "", resenas: r.resenas || "",
     web_actual: r.web_actual || "", canal: r.canal || "", proximo_contacto: r.proximo_contacto || "",
@@ -214,8 +214,13 @@ function panel(rows) {
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
 header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
 h1{font:700 1.2rem Outfit;margin:0;flex:1}
-.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted)}
-.pill--edit{text-decoration:none;border-color:var(--accent);color:var(--accent);font-weight:600}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted);text-decoration:none}
+.pill--edit{border-color:var(--accent);color:var(--accent);font-weight:600}
+.estado{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.estado button{border-radius:999px;padding:4px 10px;font-size:.74rem;background:#15343b;border:1px solid var(--line);color:var(--text);cursor:pointer}
+.estado button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.del{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:.74rem;cursor:pointer}
+.del:hover{border-color:var(--accent);color:var(--accent)}
 .wrap{padding:18px;max-width:1250px;margin:0 auto}
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 select,input,button{font:inherit;color:var(--text);background:#15343b;border:1px solid var(--line);border-radius:9px;padding:8px 12px}
@@ -242,12 +247,13 @@ a{color:var(--accent)}
   <span class="pill" id="cnt">…</span>
   <span class="pill">🔒 Compartido</span>
   <a class="pill pill--edit" href="editar/">✏️ Gestor</a>
+  <a class="pill" href="papelera/">🗑️ Papelera</a>
 </header>
 <div class="wrap">
   <div class="filters">
     <select id="fRubro"><option value="">Todos los rubros</option></select>
     <select id="fEstado"><option value="">Todos los estados</option></select>
-    <select id="fVend"><option value="">Todos los vendedores</option></select>
+    <select id="fVend"><option value="">Todos los vendedores</option><option value="__sin__">Sin vendedor</option></select>
     <input id="q" placeholder="Buscar negocio…" style="flex:1;min-width:160px">
   </div>
   <div class="metrics" id="metrics"></div>
@@ -260,6 +266,13 @@ var BASE=${JSON.stringify(config.baseUrl)};
 var CNT=${JSON.stringify((config.counter && config.counter.get) || "")};
 var NS=${JSON.stringify((config.counter && config.counter.namespace) || "")};
 var RUBROS=${JSON.stringify(Object.fromEntries(Object.entries(config.rubros).map(([k, v]) => [k, v.etiqueta])))};
+var ESTADOS=["Nuevo","Contactado","Interesado","Vendido","Descartado"];
+function esElim(v){return v===true||/^(true|si|sí|1|x)$/i.test(String(v==null?"":v).trim())}
+function findById(id){for(var i=0;i<DATA.length;i++){if(String(DATA[i].id)===String(id))return DATA[i]}return null}
+function patch(id,fields){
+  if(!(SB.base&&SB.key))return Promise.resolve(false);
+  return fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(fields)}).then(function(r){return r.ok?r.json():[]}).then(function(a){return Array.isArray(a)&&a.length>0}).catch(function(){return false});
+}
 function isNo(v){return /^(no|0|false|f|n)$/i.test(String(v||"").trim())}
 function slugify(s){return String(s||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||"negocio"}
 function digits(s){return String(s||"").replace(/\\D/g,"")}
@@ -305,20 +318,23 @@ var lastMsg=-1;
 function buildMsg(r){var i=Math.floor(Math.random()*MSGS.length);if(MSGS.length>1&&i===lastMsg)i=(i+1)%MSGS.length;lastMsg=i;return MSGS[i].replace(/\{vendedor\}/g,cap(r.vendedor)).replace(/\{negocio\}/g,r.negocio||"").replace(/\{tipo\}/g,TIPOS[r.rubro]||"negocio").replace(/\{link\}/g,BASE+"/demo/"+r._slug+"/")}
 var DATA=[];
 document.addEventListener("click",function(e){
-  var b=e.target.closest("[data-act=wa]");if(!b)return;
-  var r=(DATA||[]).filter(function(x){return x._slug===b.getAttribute("data-slug")})[0];if(!r)return;
-  var num=waNumber(r.telefono);if(!num)return;
-  window.open("https://wa.me/"+num+"?text="+encodeURIComponent(buildMsg(r)),"_blank");
+  var b=e.target.closest("[data-act=wa]");
+  if(b){var r=(DATA||[]).filter(function(x){return x._slug===b.getAttribute("data-slug")})[0];if(r){var num=waNumber(r.telefono);if(num)window.open("https://wa.me/"+num+"?text="+encodeURIComponent(buildMsg(r)),"_blank")}return}
+  var es=e.target.closest("[data-act=est]");
+  if(es){var re=findById(es.getAttribute("data-id"));if(re){re.estado=es.getAttribute("data-v");render();patch(re.id,{estado:re.estado})}return}
+  var de=e.target.closest("[data-act=del]");
+  if(de){var rd=findById(de.getAttribute("data-id"));if(rd&&window.confirm("¿Ocultar este prospecto? Queda en la Papelera y puedes restaurarlo.")){rd.eliminado=true;render();patch(rd.id,{eliminado:true})}return}
 });
 function renderMetrics(){
   var el=document.getElementById("metrics");if(!el)return;
-  var total=DATA.length,c={};
-  DATA.forEach(function(r){var e=r.estado||"Nuevo";c[e]=(c[e]||0)+1});
+  var D=DATA.filter(function(r){return !esElim(r.eliminado)});
+  var total=D.length,c={};
+  D.forEach(function(r){var e=r.estado||"Nuevo";c[e]=(c[e]||0)+1});
   var contactados=(c.Contactado||0)+(c.Interesado||0)+(c.Vendido||0);
   var interesados=(c.Interesado||0)+(c.Vendido||0);
   var vendidos=c.Vendido||0;
-  var sinWeb=DATA.filter(function(r){return !(r.web_actual||(r.tiene_web&&!isNo(r.tiene_web)))}).length;
-  var gen=DATA.filter(function(r){return r.generar!==false}).length;
+  var sinWeb=D.filter(function(r){return !(r.web_actual||(r.tiene_web&&!isNo(r.tiene_web)))}).length;
+  var gen=D.filter(function(r){return r.generar!==false}).length;
   function pct(a,b){return b?Math.round(a/b*100):0}
   function box(n,l){return '<div class="metric"><b>'+n+'</b><span>'+l+'</span></div>'}
   el.innerHTML=
@@ -332,10 +348,12 @@ function render(){
   var fr=document.getElementById("fRubro").value,fe=document.getElementById("fEstado").value,fv=document.getElementById("fVend").value,qq=document.getElementById("q").value.toLowerCase();
   var list=document.getElementById("list");list.innerHTML="";
   var items=DATA.filter(function(r){
-    if(fr&&r.rubro!==fr)return false; if(fe&&(r.estado||"")!==fe)return false; if(fv&&(r.vendedor||"")!==fv)return false;
+    if(esElim(r.eliminado))return false;
+    if(fr&&r.rubro!==fr)return false; if(fe&&(r.estado||"")!==fe)return false;
+    if(fv==="__sin__"){ if(r.vendedor)return false } else if(fv&&(r.vendedor||"")!==fv)return false;
     if(qq&&String(r.negocio||"").toLowerCase().indexOf(qq)<0)return false; return true;
   });
-  document.getElementById("cnt").textContent=items.length+" de "+DATA.length+" negocios";
+  document.getElementById("cnt").textContent=items.length+" de "+DATA.filter(function(r){return !esElim(r.eliminado)}).length+" negocios";
   if(!items.length){list.innerHTML='<p class="empty">Sin resultados.</p>';return}
   items.forEach(function(r){
     var url=BASE+"/demo/"+r._slug+"/";
@@ -347,11 +365,13 @@ function render(){
       '<p class="meta">'+esc(r.categoria||RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?" · ⭐ "+esc(r.rating):"")+(r.resenas?" ("+esc(r.resenas)+")":"")+(r.web_actual?" · con web":" · sin web")+'</p>'+
       ((r.canal||r.proximo_contacto)?'<p class="meta">'+(r.canal?"📞 "+esc(r.canal)+" ":"")+(r.proximo_contacto?"· próximo: "+esc(r.proximo_contacto):"")+'</p>':'')+
       (r.notas?'<p class="meta">📝 '+esc(r.notas)+'</p>':'')+
-      '<div class="row2"><span class="tag">'+esc(r.estado||"Nuevo")+'</span><span class="v '+esc(r.vendedor||"")+'">👤 '+esc(cap(r.vendedor)||"—")+'</span>'+
+      '<div class="row2"><span class="v '+esc(r.vendedor||"")+'">👤 '+esc(cap(r.vendedor)||"— sin vendedor")+'</span>'+
       (gen?'<a href="'+url+'" target="_blank">abrir demo →</a>':'<span class="meta">sin demo</span>')+
       (r.maps_url?' · <a href="'+esc(r.maps_url)+'" target="_blank" rel="noopener">Maps</a>':'')+
       (waN?'<button class="wa" data-act="wa" data-slug="'+esc(r._slug)+'">Escribir por WhatsApp</button>':'')+
-      (CNT&&NS?' · <span class="meta">👀 <b class="seen" data-s="'+esc(r._slug)+'">…</b></span>':'')+'</div></div>'+
+      (CNT&&NS?' · <span class="meta">👀 <b class="seen" data-s="'+esc(r._slug)+'">…</b></span>':'')+'</div>'+
+      '<div class="estado">'+ESTADOS.map(function(e){return '<button data-act="est" data-id="'+esc(r.id)+'" data-v="'+e+'"'+(r.estado===e?' class="on"':'')+'>'+e+'</button>'}).join("")+
+      '<button class="del" data-act="del" data-id="'+esc(r.id)+'">🗑️ Eliminar</button></div></div>'+
       '<div class="right"><div class="prio" title="Prioridad">'+esc(r.prioridad)+'</div><span class="meta">prioridad</span></div>';
     list.appendChild(el);
   });
@@ -370,7 +390,7 @@ function fillSelects(){
 }
 (async function(){
   var data=SNAP;
-  if(SB&&SB.url&&SB.key){
+  if(SB&&SB.base&&SB.key){
     try{
       var res=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(res.ok){var rows=await res.json();data=rows.map(function(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o._slug=slugify(o.negocio);o.prioridad=priority(o);o.estado=o.estado||"Nuevo";o.vendedor=(o.vendedor||"").toLowerCase();o.generar=!isNo(o.generar);return o});data.sort(function(a,b){return b.prioridad-a.prioridad||(Number(digits(b.resenas))||0)-(Number(digits(a.resenas))||0)})}
@@ -403,10 +423,12 @@ function gestor(rows) {
 <style>
 :root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#3ecf8e}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
-header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;z-index:5}
-h1{font:700 1.15rem Outfit;margin:0;flex:1}
-.wrap{padding:16px;max-width:1250px;margin:0 auto}
+header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
+h1{font:700 1.2rem Outfit;margin:0;flex:1}
+.wrap{padding:18px;max-width:1250px;margin:0 auto}
 a{color:var(--accent)}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted);text-decoration:none}
+.pill--edit{border-color:var(--accent);color:var(--accent);font-weight:600}
 select,input,button,textarea{font:inherit;color:var(--text);background:#15343b;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
 button{cursor:pointer}
 .btn{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
@@ -441,14 +463,15 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <header>
   <h1>✏️ ${esc(config.siteName)} · Gestor</h1>
   <span class="meta" id="cnt">…</span>
-  <a href="../">← Volver al Panel</a>
+  <a class="pill" href="papelera/">🗑️ Papelera</a>
+  <a class="pill" href="../">← Panel</a>
 </header>
 <div class="wrap">
   <div class="bar">
     <button class="btn" id="nuevo">＋ Agregar prospecto</button>
     <input type="search" id="q" placeholder="Buscar negocio, teléfono, dirección…">
     <select id="fEstado"><option value="">Estado: todos</option></select>
-    <select id="fVendedor"><option value="">Vendedor: todos</option></select>
+    <select id="fVendedor"><option value="">Vendedor: todos</option><option value="__sin__">Sin vendedor</option></select>
     <select id="fRubro"><option value="">Rubro: todos</option></select>
     <select id="fCanal"><option value="">Canal: todos</option></select>
     <select id="orden">
@@ -500,6 +523,7 @@ var CANALES=["WhatsApp","Llamada","Visita"];
 var DATA=[];
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function esElim(v){return v===true||/^(true|si|sí|1|x)$/i.test(String(v==null?"":v).trim())}
 function hdr(extra){var h={apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json"};if(extra){for(var k in extra)h[k]=extra[k]}return h}
 function norm(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o.id=r.id;return o}
 function toast(msg,err){var t=document.getElementById("toast");t.textContent=msg;t.className="show"+(err?" err":"");clearTimeout(t._t);t._t=setTimeout(function(){t.className=""},2600)}
@@ -507,7 +531,7 @@ function find(id){for(var i=0;i<DATA.length;i++)if(String(DATA[i].id)===String(i
 
 async function cargar(){
   DATA=SNAP.slice();
-  if(SB.url&&SB.key){
+  if(SB.base&&SB.key){
     try{
       var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(r.ok){DATA=(await r.json()).map(norm);} else {toast("No pude leer Supabase ("+r.status+")",1);}
@@ -517,7 +541,7 @@ async function cargar(){
 }
 
 async function patch(id,fields){
-  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
     var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
     var a=r.ok?await r.json():[];
@@ -526,7 +550,7 @@ async function patch(id,fields){
   }catch(e){toast("Error de red",1);return false}
 }
 async function insert(row){
-  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
     var r=await fetch(SB.base+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
     var a=r.ok?await r.json():[];
@@ -546,8 +570,9 @@ function filtrados(){
   var fe=document.getElementById("fEstado").value,fv=document.getElementById("fVendedor").value;
   var fr=document.getElementById("fRubro").value,fc=document.getElementById("fCanal").value;
   var arr=DATA.filter(function(r){
+    if(esElim(r.eliminado))return false;
     if(fe&&(r.estado||"Nuevo")!==fe)return false;
-    if(fv&&(r.vendedor||"")!==fv)return false;
+    if(fv==="__sin__"){if(r.vendedor)return false} else if(fv&&(r.vendedor||"")!==fv)return false;
     if(fr&&r.rubro!==fr)return false;
     if(fc&&(r.canal||"")!==fc)return false;
     if(q){var s=(r.negocio+" "+r.telefono+" "+r.direccion+" "+r.ciudad).toLowerCase();if(s.indexOf(q)<0)return false}
@@ -580,7 +605,7 @@ function info(r){
 
 function render(){
   var list=document.getElementById("list");var items=filtrados();
-  document.getElementById("cnt").textContent=items.length+" de "+DATA.length+" prospectos";
+  document.getElementById("cnt").textContent=items.length+" de "+DATA.filter(function(r){return !esElim(r.eliminado)}).length+" prospectos";
   if(!items.length){list.innerHTML='<p class="meta">Sin resultados.</p>';return}
   var html="";
   items.forEach(function(r){
@@ -593,7 +618,8 @@ function render(){
       '<div class="ctrl"><span class="mini meta">Vendedor:</span><span class="vend">'+
         Object.keys(VEND).map(function(k){return '<button data-act="vendedor" data-id="'+id+'" data-v="'+k+'"'+(r.vendedor===k?' class="on"':'')+'>'+VEND[k]+'</button>'}).join("")+
       '</span><span class="mini meta" style="margin-left:8px">Canal:</span><select data-act="canal" data-id="'+id+'"><option value="">—</option>'+CANALES.map(function(c){return '<option'+(r.canal===c?' selected':'')+'>'+c+'</option>'}).join("")+'</select>'+
-      '<button data-act="det" data-id="'+id+'" style="margin-left:auto">Ver todo ▾</button></div>'+
+      '<button data-act="det" data-id="'+id+'" style="margin-left:auto">Ver todo ▾</button>'+
+      '<button data-act="eliminar" data-id="'+id+'" style="border-color:var(--accent);color:var(--accent)">🗑️ Eliminar</button></div>'+
       info(r)+'</div>';
   });
   list.innerHTML=html;
@@ -614,6 +640,7 @@ document.getElementById("list").addEventListener("click",function(e){
   var act=b.getAttribute("data-act"),id=b.getAttribute("data-id");
   if(act==="estado")setCampo(id,"estado",b.getAttribute("data-v"));
   else if(act==="vendedor")setCampo(id,"vendedor",b.getAttribute("data-v"));
+  else if(act==="eliminar"){var re=find(id);if(re&&window.confirm("¿Ocultar este prospecto? Queda en la Papelera y puedes restaurarlo.")){re.eliminado=true;render();patch(id,{eliminado:true})}}
   else if(act==="det"){var d=b.closest(".card").querySelector(".det");d.classList.toggle("open");b.textContent=d.classList.contains("open")?"Ver menos ▴":"Ver todo ▾"}
 });
 document.getElementById("list").addEventListener("change",function(e){
@@ -630,6 +657,88 @@ document.getElementById("formNuevo").addEventListener("submit",async function(e)
   if(await insert(row)){toast("Prospecto agregado ✓");dlg.close();f.reset();await cargar()}
 });
 
+cargar();
+</script></body></html>`;
+}
+
+/* ------------------------------------------------------------- papelera --- */
+// Pestaña para ver los "eliminados" (borrado suave) y restaurarlos.
+function papelera(rows) {
+  const snap = rows.map((r) => ({
+    id: r.id || "", negocio: r.negocio || "", rubro: r.rubro || "", ciudad: r.ciudad || "",
+    telefono: r.telefono || "", estado: r.estado || "", vendedor: (r.vendedor || "").toLowerCase(), _slug: r._slug || "",
+  }));
+  return `<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(config.siteName)} · Papelera</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#3ecf8e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
+header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
+h1{font:700 1.2rem Outfit;margin:0;flex:1}
+.wrap{padding:18px;max-width:1250px;margin:0 auto}
+a{color:var(--accent)}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted);text-decoration:none}
+.pill--edit{border-color:var(--accent);color:var(--accent);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.card h3{margin:0;font:600 1.05rem Outfit}
+.meta{color:var(--muted);font-size:.85rem}
+.btn{background:var(--ok);border:1px solid var(--ok);color:#04231a;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;margin-left:auto}
+.empty{color:var(--muted);padding:30px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0a2328;border:1px solid var(--line);border-radius:10px;padding:10px 16px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}#toast.err{border-color:var(--accent)}
+</style></head><body>
+<header>
+  <h1>🗑️ ${esc(config.siteName)} · Papelera</h1>
+  <span class="meta" id="cnt">…</span>
+  <a class="pill pill--edit" href="../editar/">✏️ Gestor</a>
+  <a class="pill" href="../">← Panel</a>
+</header>
+<div class="wrap">
+  <p class="meta">Aquí están los prospectos "eliminados". No se borran de verdad: pulsa <b>Restaurar</b> y vuelven al panel.</p>
+  <div id="list"></div>
+</div>
+<div id="toast"></div>
+<script>
+var SB=${JSON.stringify({ base: ((config.supabase && config.supabase.url) || "").replace(/\/+$/, ""), tabla: (config.supabase && config.supabase.tabla) || "prospectos", key: (config.supabase && config.supabase.anonKey) || "" })};
+var SNAP=${JSON.stringify(snap)};
+var DATA=[];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function toast(m,e){var t=document.getElementById("toast");t.textContent=m;t.className="show"+(e?" err":"");clearTimeout(t._t);t._t=setTimeout(function(){t.className=""},2500)}
+function esElim(v){return v===true||/^(true|si|sí|1|x)$/i.test(String(v==null?"":v).trim())}
+async function cargar(){
+  DATA=SNAP.slice();
+  if(SB.base&&SB.key){
+    try{var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      if(r.ok){DATA=(await r.json()).filter(function(x){return esElim(x.eliminado)}).map(function(x){var o={};Object.keys(x).forEach(function(k){o[k]=x[k]==null?"":String(x[k])});return o})}
+    }catch(e){}
+  }
+  render();
+}
+async function restaurar(id){
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return}
+  try{
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({eliminado:false})});
+    var a=r.ok?await r.json():[];
+    if(r.ok&&a.length){DATA=DATA.filter(function(x){return String(x.id)!==String(id)});render();toast("Restaurado ✓")}
+    else toast("No se pudo restaurar",1);
+  }catch(e){toast("Error de red",1)}
+}
+function render(){
+  var list=document.getElementById("list");
+  document.getElementById("cnt").textContent=DATA.length+" eliminados";
+  if(!DATA.length){list.innerHTML='<p class="empty">La papelera está vacía.</p>';return}
+  var h="";
+  DATA.forEach(function(r){
+    h+='<div class="card"><div><h3>'+esc(r.negocio)+'</h3>'+
+      '<span class="meta">'+esc(r.ciudad||"")+(r.estado?' · '+esc(r.estado):"")+(r.vendedor?' · '+esc(r.vendedor):"")+(r.telefono?' · '+esc(r.telefono):"")+'</span></div>'+
+      '<button class="btn" data-id="'+esc(r.id)+'">Restaurar</button></div>';
+  });
+  list.innerHTML=h;
+}
+document.getElementById("list").addEventListener("click",function(e){var b=e.target.closest("button[data-id]");if(b)restaurar(b.getAttribute("data-id"))});
 cargar();
 </script></body></html>`;
 }
@@ -661,6 +770,11 @@ if (!raw) {
 const merged = mergeRows(raw);
 merged.sort((a, b) => priority(b) - priority(a) || (Number(digits(b.resenas)) || 0) - (Number(digits(a.resenas)) || 0));
 
+// "Eliminar" es suave: la fila queda en Supabase con eliminado=true y se oculta.
+const esElim = (v) => v === true || /^(true|si|sí|1|x|✓)$/i.test(String(v ?? "").trim());
+const activos = merged.filter((r) => !esElim(r.eliminado));
+const eliminados = merged.filter((r) => esElim(r.eliminado));
+
 await rm(DEMO_DIR, { recursive: true, force: true });
 for (const e of await readdir(DOCS).catch(() => [])) {
   if (e === "demo" || e === "index.html") continue;
@@ -669,7 +783,7 @@ for (const e of await readdir(DOCS).catch(() => [])) {
 await mkdir(DEMO_DIR, { recursive: true });
 
 let n = 0;
-for (const row of merged) {
+for (const row of activos) {
   if (isNo(row.generar)) continue;
   const g = await renderDemo(row);
   if (g) { n++; console.log(`  ✓ ${g.emoji} ${g.slug} [p${priority(row)}] (${row.vendedor || config.vendedorDefault})`); }
@@ -677,13 +791,14 @@ for (const row of merged) {
 
 const panelDir = join(DOCS, CODIGO);
 await mkdir(panelDir, { recursive: true });
-await writeFile(join(panelDir, "index.html"), panel(merged), "utf8");
-const gestorDir = join(panelDir, "editar");
-await mkdir(gestorDir, { recursive: true });
-await writeFile(join(gestorDir, "index.html"), gestor(merged), "utf8");
+await writeFile(join(panelDir, "index.html"), panel(activos), "utf8");
+await mkdir(join(panelDir, "editar"), { recursive: true });
+await writeFile(join(panelDir, "editar", "index.html"), gestor(activos), "utf8");
+await mkdir(join(panelDir, "papelera"), { recursive: true });
+await writeFile(join(panelDir, "papelera", "index.html"), papelera(eliminados), "utf8");
 await writeFile(join(DOCS, "index.html"), neutral(), "utf8");
 await writeFile(join(DOCS, ".nojekyll"), "", "utf8");
 
-console.log(`\nDemos generadas: ${n} / ${merged.length} (dedupe de ${raw.length})`);
+console.log(`\nDemos generadas: ${n} / ${activos.length} activas (${eliminados.length} en papelera; dedupe de ${raw.length})`);
 console.log(`Panel secreto: ${config.baseUrl}/${CODIGO}/`);
 console.log(`Demos: ${config.baseUrl}/demo/<slug>/`);

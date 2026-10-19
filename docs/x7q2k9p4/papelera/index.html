@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBITAS · Papelera</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#3ecf8e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
+header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
+h1{font:700 1.2rem Outfit;margin:0;flex:1}
+.wrap{padding:18px;max-width:1250px;margin:0 auto}
+a{color:var(--accent)}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted);text-decoration:none}
+.pill--edit{border-color:var(--accent);color:var(--accent);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.card h3{margin:0;font:600 1.05rem Outfit}
+.meta{color:var(--muted);font-size:.85rem}
+.btn{background:var(--ok);border:1px solid var(--ok);color:#04231a;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer;margin-left:auto}
+.empty{color:var(--muted);padding:30px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0a2328;border:1px solid var(--line);border-radius:10px;padding:10px 16px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}#toast.err{border-color:var(--accent)}
+</style></head><body>
+<header>
+  <h1>🗑️ WEBITAS · Papelera</h1>
+  <span class="meta" id="cnt">…</span>
+  <a class="pill pill--edit" href="../editar/">✏️ Gestor</a>
+  <a class="pill" href="../">← Panel</a>
+</header>
+<div class="wrap">
+  <p class="meta">Aquí están los prospectos "eliminados". No se borran de verdad: pulsa <b>Restaurar</b> y vuelven al panel.</p>
+  <div id="list"></div>
+</div>
+<div id="toast"></div>
+<script>
+var SB={"base":"https://kktinamqdrkzjyzxpctf.supabase.co","tabla":"prospectos","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"};
+var SNAP=[];
+var DATA=[];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function toast(m,e){var t=document.getElementById("toast");t.textContent=m;t.className="show"+(e?" err":"");clearTimeout(t._t);t._t=setTimeout(function(){t.className=""},2500)}
+function esElim(v){return v===true||/^(true|si|sí|1|x)$/i.test(String(v==null?"":v).trim())}
+async function cargar(){
+  DATA=SNAP.slice();
+  if(SB.base&&SB.key){
+    try{var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      if(r.ok){DATA=(await r.json()).filter(function(x){return esElim(x.eliminado)}).map(function(x){var o={};Object.keys(x).forEach(function(k){o[k]=x[k]==null?"":String(x[k])});return o})}
+    }catch(e){}
+  }
+  render();
+}
+async function restaurar(id){
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return}
+  try{
+    var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({eliminado:false})});
+    var a=r.ok?await r.json():[];
+    if(r.ok&&a.length){DATA=DATA.filter(function(x){return String(x.id)!==String(id)});render();toast("Restaurado ✓")}
+    else toast("No se pudo restaurar",1);
+  }catch(e){toast("Error de red",1)}
+}
+function render(){
+  var list=document.getElementById("list");
+  document.getElementById("cnt").textContent=DATA.length+" eliminados";
+  if(!DATA.length){list.innerHTML='<p class="empty">La papelera está vacía.</p>';return}
+  var h="";
+  DATA.forEach(function(r){
+    h+='<div class="card"><div><h3>'+esc(r.negocio)+'</h3>'+
+      '<span class="meta">'+esc(r.ciudad||"")+(r.estado?' · '+esc(r.estado):"")+(r.vendedor?' · '+esc(r.vendedor):"")+(r.telefono?' · '+esc(r.telefono):"")+'</span></div>'+
+      '<button class="btn" data-id="'+esc(r.id)+'">Restaurar</button></div>';
+  });
+  list.innerHTML=h;
+}
+document.getElementById("list").addEventListener("click",function(e){var b=e.target.closest("button[data-id]");if(b)restaurar(b.getAttribute("data-id"))});
+cargar();
+</script></body></html>

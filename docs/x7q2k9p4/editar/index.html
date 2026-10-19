@@ -6,10 +6,12 @@
 <style>
 :root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#3ecf8e}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
-header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;z-index:5}
-h1{font:700 1.15rem Outfit;margin:0;flex:1}
-.wrap{padding:16px;max-width:1250px;margin:0 auto}
+header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
+h1{font:700 1.2rem Outfit;margin:0;flex:1}
+.wrap{padding:18px;max-width:1250px;margin:0 auto}
 a{color:var(--accent)}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted);text-decoration:none}
+.pill--edit{border-color:var(--accent);color:var(--accent);font-weight:600}
 select,input,button,textarea{font:inherit;color:var(--text);background:#15343b;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
 button{cursor:pointer}
 .btn{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
@@ -44,14 +46,15 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <header>
   <h1>✏️ WEBITAS · Gestor</h1>
   <span class="meta" id="cnt">…</span>
-  <a href="../">← Volver al Panel</a>
+  <a class="pill" href="papelera/">🗑️ Papelera</a>
+  <a class="pill" href="../">← Panel</a>
 </header>
 <div class="wrap">
   <div class="bar">
     <button class="btn" id="nuevo">＋ Agregar prospecto</button>
     <input type="search" id="q" placeholder="Buscar negocio, teléfono, dirección…">
     <select id="fEstado"><option value="">Estado: todos</option></select>
-    <select id="fVendedor"><option value="">Vendedor: todos</option></select>
+    <select id="fVendedor"><option value="">Vendedor: todos</option><option value="__sin__">Sin vendedor</option></select>
     <select id="fRubro"><option value="">Rubro: todos</option></select>
     <select id="fCanal"><option value="">Canal: todos</option></select>
     <select id="orden">
@@ -103,6 +106,7 @@ var CANALES=["WhatsApp","Llamada","Visita"];
 var DATA=[];
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function esElim(v){return v===true||/^(true|si|sí|1|x)$/i.test(String(v==null?"":v).trim())}
 function hdr(extra){var h={apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json"};if(extra){for(var k in extra)h[k]=extra[k]}return h}
 function norm(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o.id=r.id;return o}
 function toast(msg,err){var t=document.getElementById("toast");t.textContent=msg;t.className="show"+(err?" err":"");clearTimeout(t._t);t._t=setTimeout(function(){t.className=""},2600)}
@@ -110,7 +114,7 @@ function find(id){for(var i=0;i<DATA.length;i++)if(String(DATA[i].id)===String(i
 
 async function cargar(){
   DATA=SNAP.slice();
-  if(SB.url&&SB.key){
+  if(SB.base&&SB.key){
     try{
       var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
       if(r.ok){DATA=(await r.json()).map(norm);} else {toast("No pude leer Supabase ("+r.status+")",1);}
@@ -120,7 +124,7 @@ async function cargar(){
 }
 
 async function patch(id,fields){
-  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
     var r=await fetch(SB.base+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
     var a=r.ok?await r.json():[];
@@ -129,7 +133,7 @@ async function patch(id,fields){
   }catch(e){toast("Error de red",1);return false}
 }
 async function insert(row){
-  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  if(!(SB.base&&SB.key)){toast("Supabase no configurado",1);return false}
   try{
     var r=await fetch(SB.base+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
     var a=r.ok?await r.json():[];
@@ -149,8 +153,9 @@ function filtrados(){
   var fe=document.getElementById("fEstado").value,fv=document.getElementById("fVendedor").value;
   var fr=document.getElementById("fRubro").value,fc=document.getElementById("fCanal").value;
   var arr=DATA.filter(function(r){
+    if(esElim(r.eliminado))return false;
     if(fe&&(r.estado||"Nuevo")!==fe)return false;
-    if(fv&&(r.vendedor||"")!==fv)return false;
+    if(fv==="__sin__"){if(r.vendedor)return false} else if(fv&&(r.vendedor||"")!==fv)return false;
     if(fr&&r.rubro!==fr)return false;
     if(fc&&(r.canal||"")!==fc)return false;
     if(q){var s=(r.negocio+" "+r.telefono+" "+r.direccion+" "+r.ciudad).toLowerCase();if(s.indexOf(q)<0)return false}
@@ -183,7 +188,7 @@ function info(r){
 
 function render(){
   var list=document.getElementById("list");var items=filtrados();
-  document.getElementById("cnt").textContent=items.length+" de "+DATA.length+" prospectos";
+  document.getElementById("cnt").textContent=items.length+" de "+DATA.filter(function(r){return !esElim(r.eliminado)}).length+" prospectos";
   if(!items.length){list.innerHTML='<p class="meta">Sin resultados.</p>';return}
   var html="";
   items.forEach(function(r){
@@ -196,7 +201,8 @@ function render(){
       '<div class="ctrl"><span class="mini meta">Vendedor:</span><span class="vend">'+
         Object.keys(VEND).map(function(k){return '<button data-act="vendedor" data-id="'+id+'" data-v="'+k+'"'+(r.vendedor===k?' class="on"':'')+'>'+VEND[k]+'</button>'}).join("")+
       '</span><span class="mini meta" style="margin-left:8px">Canal:</span><select data-act="canal" data-id="'+id+'"><option value="">—</option>'+CANALES.map(function(c){return '<option'+(r.canal===c?' selected':'')+'>'+c+'</option>'}).join("")+'</select>'+
-      '<button data-act="det" data-id="'+id+'" style="margin-left:auto">Ver todo ▾</button></div>'+
+      '<button data-act="det" data-id="'+id+'" style="margin-left:auto">Ver todo ▾</button>'+
+      '<button data-act="eliminar" data-id="'+id+'" style="border-color:var(--accent);color:var(--accent)">🗑️ Eliminar</button></div>'+
       info(r)+'</div>';
   });
   list.innerHTML=html;
@@ -217,6 +223,7 @@ document.getElementById("list").addEventListener("click",function(e){
   var act=b.getAttribute("data-act"),id=b.getAttribute("data-id");
   if(act==="estado")setCampo(id,"estado",b.getAttribute("data-v"));
   else if(act==="vendedor")setCampo(id,"vendedor",b.getAttribute("data-v"));
+  else if(act==="eliminar"){var re=find(id);if(re&&window.confirm("¿Ocultar este prospecto? Queda en la Papelera y puedes restaurarlo.")){re.eliminado=true;render();patch(id,{eliminado:true})}}
   else if(act==="det"){var d=b.closest(".card").querySelector(".det");d.classList.toggle("open");b.textContent=d.classList.contains("open")?"Ver menos ▴":"Ver todo ▾"}
 });
 document.getElementById("list").addEventListener("change",function(e){
