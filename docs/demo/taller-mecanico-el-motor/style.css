@@ -1,11 +1,10 @@
 /* ============================================================
-   TK MOTORS — rediseño (tema CLARO, paleta de la web original)
-   Estructura de tkmotors.com.pe, mejorada y corregida.
-   Colores exactos: #0062ff (marca), #444 (texto), #030303 (títulos),
+   TALLER — plantilla genérica (tema CLARO, azul de marca)
+   Colores: #0062ff (marca), #444 (texto), #030303 (títulos),
    #ebebeb (líneas), #f3f3f3 / #eeeeee (grises), #8bba34 (verde).
    ============================================================ */
 :root {
-  /* Paleta exacta de tkmotors.com.pe (sin negros) */
+  /* Paleta de la plantilla */
   --blue: #0062ff;
   --blue-2: #0040dd;
   --blue-soft: rgba(0, 98, 255, 0.10);
@@ -124,6 +123,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 0.
 .hero__media { position: relative; }
 .hero__frame { position: relative; overflow: hidden; border-radius: 12px; box-shadow: var(--shadow); }
 .hero__frame--video { aspect-ratio: 16 / 9; background: var(--gris); }
+.hero__frame--img { aspect-ratio: 16 / 9; background: var(--gris); }
+.hero__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero__slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s var(--ease); }
 .hero__slide.is-active { opacity: 1; }
 .hero__video { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -140,19 +141,13 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 0.
 .hero__card-num { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; color: var(--blue); line-height: 1; }
 .hero__card-txt { font-size: 0.82rem; color: var(--muted); }
 
-/* ---------- Marcas (banda azul de marca, como el original) ---------- */
-.marcas { background: var(--blue); }
-.marcas__inner { width: var(--wrap); margin-inline: auto; padding: 22px 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-.marcas__fila { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 30px; min-width: 0; }
-.marcas__label { flex-shrink: 0; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.82rem; color: rgba(255, 255, 255, 0.85); }
-.marquee { position: relative; flex: 1 1 260px; min-width: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.marquee__track { display: flex; width: max-content; }
-.marquee__track.is-anim { animation: marquee 34s linear infinite; }
-.marquee__track--sup.is-anim { animation-duration: 46s; }
-.marquee:hover .marquee__track.is-anim, .marquee:focus-within .marquee__track.is-anim { animation-play-state: paused; }
-.marquee__track img { flex-shrink: 0; height: 34px; width: auto; margin-right: 46px; opacity: 0.92; }
-.marquee__track--sup img { height: 26px; }
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* ---------- Galería ---------- */
+.galeria { background: var(--surface); padding: clamp(56px, 8vw, 100px) 0; }
+.galeria__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.galeria__item { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--gris); aspect-ratio: 4 / 3; margin: 0; }
+.galeria__item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s var(--ease); }
+.galeria__item:hover img { transform: scale(1.04); }
+@media (max-width: 900px) { .galeria__grid { grid-template-columns: repeat(2, 1fr); } }
 
 /* ---------- Nosotros ---------- */
 .nosotros { background: var(--surface); padding: clamp(56px, 8vw, 100px) 0; }
@@ -301,6 +296,4 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 8px); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   html.js .reveal:not(.is-in) { opacity: 1; transform: none; }
-  .marquee { overflow-x: auto; }
-  .marquee__track.is-anim { animation: none; }
 }

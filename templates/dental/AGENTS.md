@@ -7,14 +7,14 @@ Static one-page website for a dental clinic (Spanish, `lang="es"`). Three files 
 - There is no build/lint/typecheck/test command. Verify changes visually in a browser.
 - GSAP + ScrollTrigger are loaded from a CDN in `index.html` (bottom, `defer`). `script.js` bails out of all animations if `window.gsap`/`window.ScrollTrigger` are missing — the page still works without them.
 
-## Demo placeholder tokens (intentional)
-This is a demo to sell to a real clinic. Replace these per client:
-- Demo brand: **Clínica Dental Aurea** / logo text **Dental Aurea** (used in `<title>`, `<head>` meta, JSON-LD, header/footer logo, footer legal, WhatsApp text).
-- Demo contact data (fake, for the demo): address **Av. Benavides 1234, Miraflores – Lima**, phone/WhatsApp **+51 904 691 771** (`51904691771`), email **hola@dentalaurea.pe**, hours **Lun a Vie 9:00–19:00 · Sáb 9:00–14:00**.
-- WhatsApp numbers: the clinic demo number is `51904691771` (hero, franja, footer, float button, form). The sales CTAs ("¿Es su negocio?" / "Activar mi página") use the vendor number `51941571821`. Replace both per client.
-- Team names/specialties (`Dra. Valeria Ríos`, `Dr. Andrés Campos`, `Dr. Marco Salazar`) are placeholders.
-- Empty `canonical`, `og:url`-style values, and social `href="#"`.
-- `<!-- REEMPLAZAR: ... -->` comments mark images to swap. A photo list is in the comment at the top of `<body>`.
+## Templates are tokenized (intentional)
+This is a reusable template. `generator/build.mjs` fills these `{{...}}` tokens per business; do not hardcode client data:
+- **Business (from the CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{ciudad}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`.
+- **Contact / NAP:** `{{telefono}}` (display), `{{telefono_tel}}` (with `+`, for `tel:`), `{{whatsapp}}` (digits, for `wa.me`). These come from the **business's own phone** and are used in hero, footer, float button, form and JSON-LD.
+- **Seller:** `{{vendedor_nombre}}` and `{{vendedor_whatsapp}}`. The vendor's number appears **only** in the sales CTAs ("¿Es su negocio?" / "Activar mi página"); never as the business's phone.
+- Team names/specialties, testimonials and stats are **placeholder content**: replace or remove them per client before publishing (do not ship invented testimonials/stats as if real).
+- `canonical` is empty on purpose (demos are `noindex`).
+- `<!-- REEMPLAZAR: ... -->` marks images to swap. A photo list is in the comment at the top of `<body>`.
 
 ## Images
 - Scene photos come from Pexels (`images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=...`) — free to use, hotlinkable. IDs in use: hero `3845627`, gallery `3845626`/`6473194`/`12917374`, nosotros `7803056`, team `37458147`/`37458044`/`32205053`, CTA `3845810`.

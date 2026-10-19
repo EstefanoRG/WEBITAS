@@ -29,8 +29,9 @@ jobs:
 
       - name: Generar demos
         env:
-          # Opcional: si defines el secreto SHEET_CSV_URL, el generador usa Google Sheets.
-          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+          # Opcional: la service_role acelera/securiza; si no está, se usa la anon pública.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: node generator/build.mjs
 
       - uses: actions/configure-pages@v5

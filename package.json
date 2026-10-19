@@ -7,6 +7,9 @@
   "scripts": {
     "build": "node generator/build.mjs",
     "panel": "node tools/panel.mjs",
+    "rubro": "node tools/new-rubro.mjs",
+    "import": "node tools/supabase-import.mjs",
+    "setup": "node tools/supabase-setup.mjs",
     "tokenize": "node tools/tokenize.mjs",
     "deploy": "node generator/build.mjs && git add -A && git commit -m \"build: regenerar demos\" && git push"
   }

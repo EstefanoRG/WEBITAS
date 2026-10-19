@@ -9,6 +9,7 @@
 header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}
 h1{font:700 1.2rem Outfit;margin:0;flex:1}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:.78rem;color:var(--muted)}
+.pill--edit{text-decoration:none;border-color:var(--accent);color:var(--accent);font-weight:600}
 .wrap{padding:18px;max-width:1250px;margin:0 auto}
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 select,input,button{font:inherit;color:var(--text);background:#15343b;border:1px solid var(--line);border-radius:9px;padding:8px 12px}
@@ -25,11 +26,16 @@ a{color:var(--accent)}
 .right{text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .prio{font:700 1.6rem Outfit;color:var(--accent)}
 .empty{color:var(--muted);padding:30px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.metric b{display:block;font:700 1.5rem Outfit;color:var(--accent)}
+.metric span{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
 </style></head><body>
 <header>
   <h1>🗂️ WEBITAS · Panel</h1>
   <span class="pill" id="cnt">…</span>
   <span class="pill">🔒 Compartido</span>
+  <a class="pill pill--edit" href="editar/">✏️ Gestor</a>
 </header>
 <div class="wrap">
   <div class="filters">
@@ -38,14 +44,15 @@ a{color:var(--accent)}
     <select id="fVend"><option value="">Todos los vendedores</option></select>
     <input id="q" placeholder="Buscar negocio…" style="flex:1;min-width:160px">
   </div>
+  <div class="metrics" id="metrics"></div>
   <div id="list"></div>
 </div>
 <script>
-var SHEET="";
-var SNAP=[{"_slug":"clinica-dental-sonrisa","negocio":"Clínica Dental Sonrisa","rubro":"dental","categoria":"Clínica dental","ciudad":"Lima","telefono":"+51 988 222 333","rating":"4.9","resenas":"142","web_actual":"","canal":"WhatsApp","proximo_contacto":"","ultimo_contacto":"2025-10-12","estado":"Contactado","vendedor":"luigui","generar":true,"prioridad":8},{"_slug":"clinica-veterinaria-patitas","negocio":"Clínica Veterinaria Patitas","rubro":"veterinaria","categoria":"Veterinaria","ciudad":"Lima","telefono":"+51 999 111 222","rating":"4.7","resenas":"58","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","estado":"Nuevo","vendedor":"estefano","generar":true,"prioridad":8},{"_slug":"estudio-casa-forma","negocio":"Estudio Casa & Forma","rubro":"interiores","categoria":"Diseño de interiores","ciudad":"Lima","telefono":"+51 966 444 555","rating":"5.0","resenas":"27","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","estado":"Nuevo","vendedor":"luigui","generar":true,"prioridad":7},{"_slug":"taller-mecanico-el-motor","negocio":"Taller Mecánico El Motor","rubro":"taller","categoria":"Taller mecánico","ciudad":"Lima","telefono":"+51 977 333 444","rating":"4.4","resenas":"34","web_actual":"http://elmotor.wixsite.com","canal":"Llamada","proximo_contacto":"","ultimo_contacto":"","estado":"Interesado","vendedor":"estefano","generar":true,"prioridad":3},{"_slug":"clinica-veterinaria-rex","negocio":"Clínica Veterinaria Rex","rubro":"veterinaria","categoria":"Veterinaria","ciudad":"Lima","telefono":"+51 955 666 777","rating":"4.2","resenas":"11","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","estado":"Descartado","vendedor":"estefano","generar":false,"prioridad":2}];
+var SNAP=[{"_slug":"clinica-dental-sonrisa","negocio":"Clínica Dental Sonrisa","rubro":"dental","categoria":"Clínica dental","ciudad":"Lima","telefono":"+51 988 222 333","rating":"4.9","resenas":"142","web_actual":"","canal":"WhatsApp","proximo_contacto":"","ultimo_contacto":"2025-10-12","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Dental%20Sonrisa%20Miraflores","notas":"Buena oportunidad","estado":"Contactado","vendedor":"luigui","generar":true,"prioridad":8},{"_slug":"clinica-veterinaria-patitas","negocio":"Clínica Veterinaria Patitas","rubro":"veterinaria","categoria":"Veterinaria","ciudad":"Lima","telefono":"+51 999 111 222","rating":"4.7","resenas":"58","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Patitas%20Villa%20El%20Salvador","notas":"58 reseñas; solo Facebook; activa","estado":"Nuevo","vendedor":"estefano","generar":true,"prioridad":8},{"_slug":"estudio-casa-forma","negocio":"Estudio Casa & Forma","rubro":"interiores","categoria":"Diseño de interiores","ciudad":"Lima","telefono":"+51 966 444 555","rating":"5.0","resenas":"27","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","maps_url":"https://www.google.com/maps/search/?api=1&query=Estudio%20Casa%20y%20Forma%20SMP","notas":"Proyectos residenciales y comerciales","estado":"Nuevo","vendedor":"luigui","generar":true,"prioridad":7},{"_slug":"taller-mecanico-el-motor","negocio":"Taller Mecánico El Motor","rubro":"taller","categoria":"Taller mecánico","ciudad":"Lima","telefono":"+51 977 333 444","rating":"4.4","resenas":"34","web_actual":"http://elmotor.wixsite.com","canal":"Llamada","proximo_contacto":"","ultimo_contacto":"","maps_url":"https://www.google.com/maps/search/?api=1&query=Taller%20Mecanico%20El%20Motor%20Lurigancho","notas":"Web wix lenta; mostrar demo en persona","estado":"Interesado","vendedor":"estefano","generar":true,"prioridad":3},{"_slug":"clinica-veterinaria-rex","negocio":"Clínica Veterinaria Rex","rubro":"veterinaria","categoria":"Veterinaria","ciudad":"Lima","telefono":"+51 955 666 777","rating":"4.2","resenas":"11","web_actual":"","canal":"","proximo_contacto":"","ultimo_contacto":"","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Rex%20Surco","notas":"Sin demo por ahora","estado":"Descartado","vendedor":"estefano","generar":false,"prioridad":2}];
+var SB={url:"https://kktinamqdrkzjyzxpctf.supabase.co",tabla:"prospectos",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"};
 var BASE="https://estefanorg.github.io/WEBITAS";
-var CNT="https://abacus.jasoncameron.dev/get";
-var NS="webitas-estefanorg";
+var CNT="";
+var NS="";
 var RUBROS={"veterinaria":"Veterinaria","dental":"Clínica dental","taller":"Taller automotriz","interiores":"Diseño de interiores"};
 function isNo(v){return /^(no|0|false|f|n)$/i.test(String(v||"").trim())}
 function slugify(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||"negocio"}
@@ -97,7 +104,25 @@ document.addEventListener("click",function(e){
   var num=waNumber(r.telefono);if(!num)return;
   window.open("https://wa.me/"+num+"?text="+encodeURIComponent(buildMsg(r)),"_blank");
 });
+function renderMetrics(){
+  var el=document.getElementById("metrics");if(!el)return;
+  var total=DATA.length,c={};
+  DATA.forEach(function(r){var e=r.estado||"Nuevo";c[e]=(c[e]||0)+1});
+  var contactados=(c.Contactado||0)+(c.Interesado||0)+(c.Vendido||0);
+  var interesados=(c.Interesado||0)+(c.Vendido||0);
+  var vendidos=c.Vendido||0;
+  var sinWeb=DATA.filter(function(r){return !(r.web_actual||(r.tiene_web&&!isNo(r.tiene_web)))}).length;
+  var gen=DATA.filter(function(r){return r.generar!==false}).length;
+  function pct(a,b){return b?Math.round(a/b*100):0}
+  function box(n,l){return '<div class="metric"><b>'+n+'</b><span>'+l+'</span></div>'}
+  el.innerHTML=
+    box(total,"prospectos")+box(sinWeb,"sin web")+box(gen,"con demo")+
+    box(contactados,"contactados")+box(interesados,"interesados")+box(vendidos,"vendidos")+
+    box(c.Descartado||0,"descartados")+box(pct(interesados,contactados)+"%","tasa respuesta")+
+    box(pct(vendidos,contactados)+"%","tasa cierre");
+}
 function render(){
+  renderMetrics();
   var fr=document.getElementById("fRubro").value,fe=document.getElementById("fEstado").value,fv=document.getElementById("fVend").value,qq=document.getElementById("q").value.toLowerCase();
   var list=document.getElementById("list");list.innerHTML="";
   var items=DATA.filter(function(r){
@@ -115,10 +140,12 @@ function render(){
       '<div><h3>'+esc(r.negocio)+'</h3>'+
       '<p class="meta">'+esc(r.categoria||RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?" · ⭐ "+esc(r.rating):"")+(r.resenas?" ("+esc(r.resenas)+")":"")+(r.web_actual?" · con web":" · sin web")+'</p>'+
       ((r.canal||r.proximo_contacto)?'<p class="meta">'+(r.canal?"📞 "+esc(r.canal)+" ":"")+(r.proximo_contacto?"· próximo: "+esc(r.proximo_contacto):"")+'</p>':'')+
+      (r.notas?'<p class="meta">📝 '+esc(r.notas)+'</p>':'')+
       '<div class="row2"><span class="tag">'+esc(r.estado||"Nuevo")+'</span><span class="v '+esc(r.vendedor||"")+'">👤 '+esc(cap(r.vendedor)||"—")+'</span>'+
       (gen?'<a href="'+url+'" target="_blank">abrir demo →</a>':'<span class="meta">sin demo</span>')+
+      (r.maps_url?' · <a href="'+esc(r.maps_url)+'" target="_blank" rel="noopener">Maps</a>':'')+
       (waN?'<button class="wa" data-act="wa" data-slug="'+esc(r._slug)+'">Escribir por WhatsApp</button>':'')+
-      ' · <span class="meta">👀 <b class="seen" data-s="'+esc(r._slug)+'">…</b></span></div></div>'+
+      (CNT&&NS?' · <span class="meta">👀 <b class="seen" data-s="'+esc(r._slug)+'">…</b></span>':'')+'</div></div>'+
       '<div class="right"><div class="prio" title="Prioridad">'+esc(r.prioridad)+'</div><span class="meta">prioridad</span></div>';
     list.appendChild(el);
   });
@@ -137,7 +164,12 @@ function fillSelects(){
 }
 (async function(){
   var data=SNAP;
-  if(SHEET){try{data=normalize(parseCSV(await (await fetch(SHEET)).text()))}catch(e){}}
+  if(SB&&SB.url&&SB.key){
+    try{
+      var res=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      if(res.ok){var rows=await res.json();data=rows.map(function(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o._slug=slugify(o.negocio);o.prioridad=priority(o);o.estado=o.estado||"Nuevo";o.vendedor=(o.vendedor||"").toLowerCase();o.generar=!isNo(o.generar);return o});data.sort(function(a,b){return b.prioridad-a.prioridad||(Number(digits(b.resenas))||0)-(Number(digits(a.resenas))||0)})}
+    }catch(e){}
+  }
   DATA=data; fillSelects(); render();
 })();
 </script></body></html>

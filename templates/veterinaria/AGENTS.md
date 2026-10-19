@@ -7,11 +7,13 @@ Static one-page website for a veterinary clinic (Spanish, `lang="es"`). Three fi
 - There is no build/lint/typecheck/test command. Verify changes visually in a browser.
 - GSAP + ScrollTrigger are loaded from a CDN in `index.html` (bottom, `defer`). `script.js` bails out of all animations if `window.gsap`/`window.ScrollTrigger` are missing — the page still works without them.
 
-## This is a reusable template — placeholder tokens are intentional
-Do not "fix" these; they are meant to be replaced per client:
-- `[NOMBRE DE LA CLÍNICA]`, `[DIRECCIÓN]`, `[TELÉFONO]`, `[HORARIOS]` appear throughout `index.html` (head meta, JSON-LD, body copy, footer).
-- The clinic WhatsApp number is the demo value `51904691771` (unified across hero, footer, float button, form and franja). The sales CTAs ("¿Es su negocio?" / "Activar mi página") use the vendor number `51941571821`. Replace both per client.
-- Empty `canonical`, `og:url`-style values, and social `href="#"`.
+## This is a reusable template — tokens are intentional
+Do not "fix" these; `generator/build.mjs` fills them per business:
+- **Business (CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{ciudad}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`.
+- **Contact / NAP:** `{{telefono}}` (display), `{{telefono_tel}}` (for `tel:`), `{{whatsapp}}` (digits, for `wa.me`). All come from the **business's own phone** and are used in hero, footer, float button, form and JSON-LD.
+- **Seller:** `{{vendedor_nombre}}`, `{{vendedor_whatsapp}}`. The vendor number appears **only** in the sales CTAs ("¿Es su negocio?" / "Activar mi página").
+- Testimonials and stats are **placeholder content**: replace or remove per client before publishing.
+- `canonical` empty on purpose (demos are `noindex`).
 - `<!-- REEMPLAZAR: ... -->` comments mark images to swap. Images currently point at Unsplash URLs; a photo list is in the comment at the top of `<body>`.
 
 ## Conventions

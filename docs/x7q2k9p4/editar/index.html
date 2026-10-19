@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBITAS · Gestor</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1a1d;--card:#122b31;--line:#1d444c;--text:#eaf3f4;--muted:#9dc0c5;--accent:#ea6a4b;--ok:#3ecf8e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1a1d,#0a3238);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif}
+header{position:sticky;top:0;background:#0a2328;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;z-index:5}
+h1{font:700 1.15rem Outfit;margin:0;flex:1}
+.wrap{padding:16px;max-width:1250px;margin:0 auto}
+a{color:var(--accent)}
+select,input,button,textarea{font:inherit;color:var(--text);background:#15343b;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+button{cursor:pointer}
+.btn{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.bar input[type=search]{flex:1;min-width:160px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.card__top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.card h3{margin:0;font:600 1.05rem Outfit}
+.meta{color:var(--muted);font-size:.85rem}
+.prio{font:700 1.3rem Outfit;color:var(--accent);margin-left:auto}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.estado button{border-radius:999px;padding:5px 11px;font-size:.78rem;background:#15343b;border:1px solid var(--line);color:var(--text)}
+.estado button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.vend button{border-radius:8px;padding:5px 10px;font-size:.78rem}
+.vend button.on{background:var(--ok);border-color:var(--ok);color:#04231a;font-weight:700}
+.mini{font-size:.78rem}
+.det{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;display:none}
+.det.open{display:block}
+.det dl{display:grid;grid-template-columns:130px 1fr;gap:3px 12px;margin:0}
+.det dt{color:var(--muted);font-size:.8rem}
+.det dd{margin:0;font-size:.86rem;word-break:break-word}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0a2328;border:1px solid var(--line);border-radius:10px;padding:10px 16px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}
+#toast.err{border-color:var(--accent)}
+dialog{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:16px;max-width:640px;width:92vw;padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.f span{font-size:.8rem;color:var(--muted)}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+</style></head><body>
+<header>
+  <h1>✏️ WEBITAS · Gestor</h1>
+  <span class="meta" id="cnt">…</span>
+  <a href="../">← Volver al Panel</a>
+</header>
+<div class="wrap">
+  <div class="bar">
+    <button class="btn" id="nuevo">＋ Agregar prospecto</button>
+    <input type="search" id="q" placeholder="Buscar negocio, teléfono, dirección…">
+    <select id="fEstado"><option value="">Estado: todos</option></select>
+    <select id="fVendedor"><option value="">Vendedor: todos</option></select>
+    <select id="fRubro"><option value="">Rubro: todos</option></select>
+    <select id="fCanal"><option value="">Canal: todos</option></select>
+    <select id="orden">
+      <option value="prioridad">Orden: prioridad</option>
+      <option value="resenas">Orden: reseñas</option>
+      <option value="rating">Orden: rating</option>
+      <option value="negocio">Orden: nombre</option>
+    </select>
+  </div>
+  <div id="list"></div>
+</div>
+
+<dialog id="dlg">
+  <h2 style="margin-top:0;font:600 1.1rem Outfit">Agregar prospecto</h2>
+  <form id="formNuevo">
+    <div class="grid2">
+      <label class="f"><span>Negocio *</span><input name="negocio" required></label>
+      <label class="f"><span>Rubro *</span>
+        <select name="rubro" required><option value="">Elige…</option></select></label>
+      <label class="f"><span>Teléfono *</span><input name="telefono" required placeholder="+51 999 111 222"></label>
+      <label class="f"><span>Categoría</span><input name="categoria"></label>
+      <label class="f"><span>Dirección</span><input name="direccion"></label>
+      <label class="f"><span>Zona</span><input name="zona"></label>
+      <label class="f"><span>Ciudad</span><input name="ciudad" placeholder="Lima"></label>
+      <label class="f"><span>Rating</span><input name="rating" placeholder="4.7"></label>
+      <label class="f"><span>Reseñas</span><input name="resenas" placeholder="58"></label>
+      <label class="f"><span>¿Tiene web?</span><select name="tiene_web"><option value="">—</option><option value="si">Sí</option><option value="no">No</option></select></label>
+      <label class="f"><span>Web actual</span><input name="web_actual" placeholder="https://…"></label>
+      <label class="f"><span>Maps URL</span><input name="maps_url" placeholder="https://maps.google.com/…"></label>
+      <label class="f"><span>Estado</span><select name="estado"><option>Nuevo</option><option>Contactado</option><option>Interesado</option><option>Vendido</option><option>Descartado</option></select></label>
+      <label class="f"><span>Vendedor</span><select name="vendedor"><option value="">—</option><option value="estefano">Estefano</option><option value="luigui">Luigui</option></select></label>
+    </div>
+    <label class="f"><span>Notas</span><textarea name="notas" rows="2"></textarea></label>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button type="button" id="cancelar">Cancelar</button>
+      <button type="submit" class="btn">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+<script>
+var SB={"url":"https://kktinamqdrkzjyzxpctf.supabase.co","tabla":"prospectos","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"};
+var SNAP=[{"id":"","negocio":"Clínica Dental Sonrisa","rubro":"dental","categoria":"Clínica dental","direccion":"Av. Benavides 1234, Miraflores","zona":"Miraflores","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Dental%20Sonrisa%20Miraflores","telefono":"+51 988 222 333","email":"hola@dentalsonrisa.pe","horarios":"Lun a Vie 9:00–19:00","instagram":"dentalsonrisa.pe","instagram_url":"https://instagram.com/dentalsonrisa.pe","facebook":"","web_actual":"","rating":"4.9","resenas":"142","tiene_web":"no","estado":"Contactado","vendedor":"luigui","canal":"WhatsApp","proximo_contacto":"","ultimo_contacto":"2025-10-12","generar":"","notas":"Buena oportunidad","prioridad":8},{"id":"","negocio":"Clínica Veterinaria Patitas","rubro":"veterinaria","categoria":"Veterinaria","direccion":"Av. 24 de Junio Mz 25, VES","zona":"Villa El Salvador","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Patitas%20Villa%20El%20Salvador","telefono":"+51 999 111 222","email":"contacto@patitas.pe","horarios":"Lun a Sáb 9:00–20:00","instagram":"patitas.pe","instagram_url":"https://instagram.com/patitas.pe","facebook":"","web_actual":"","rating":"4.7","resenas":"58","tiene_web":"no","estado":"Nuevo","vendedor":"estefano","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"58 reseñas; solo Facebook; activa","prioridad":8},{"id":"","negocio":"Estudio Casa & Forma","rubro":"interiores","categoria":"Diseño de interiores","direccion":"Av. Perú 880, SMP","zona":"San Martín de Porres","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Estudio%20Casa%20y%20Forma%20SMP","telefono":"+51 966 444 555","email":"hola@casaforma.pe","horarios":"","instagram":"casaforma","instagram_url":"https://instagram.com/casaforma","facebook":"https://facebook.com/casaforma","web_actual":"","rating":"5.0","resenas":"27","tiene_web":"no","estado":"Nuevo","vendedor":"luigui","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"Proyectos residenciales y comerciales","prioridad":7},{"id":"","negocio":"Taller Mecánico El Motor","rubro":"taller","categoria":"Taller mecánico","direccion":"Av. Pachacútec 220, Lurigancho","zona":"Lurigancho","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Taller%20Mecanico%20El%20Motor%20Lurigancho","telefono":"+51 977 333 444","email":"ventas@elmotor.pe","horarios":"Lun a Sáb 8:00–18:00","instagram":"","instagram_url":"","facebook":"","web_actual":"http://elmotor.wixsite.com","rating":"4.4","resenas":"34","tiene_web":"si","estado":"Interesado","vendedor":"estefano","canal":"Llamada","proximo_contacto":"","ultimo_contacto":"","generar":"","notas":"Web wix lenta; mostrar demo en persona","prioridad":3},{"id":"","negocio":"Clínica Veterinaria Rex","rubro":"veterinaria","categoria":"Veterinaria","direccion":"Av. Benavides 3390, Surco","zona":"Surco","ciudad":"Lima","maps_url":"https://www.google.com/maps/search/?api=1&query=Clinica%20Veterinaria%20Rex%20Surco","telefono":"+51 955 666 777","email":"","horarios":"","instagram":"","instagram_url":"","facebook":"","web_actual":"","rating":"4.2","resenas":"11","tiene_web":"si","estado":"Descartado","vendedor":"estefano","canal":"","proximo_contacto":"","ultimo_contacto":"","generar":"no","notas":"Sin demo por ahora","prioridad":2}];
+var RUBROS={"veterinaria":"Veterinaria","dental":"Clínica dental","taller":"Taller automotriz","interiores":"Diseño de interiores"};
+var VEND={"estefano":"Estefano","luigui":"Luigui"};
+var ESTADOS=["Nuevo","Contactado","Interesado","Vendido","Descartado"];
+var CANALES=["WhatsApp","Llamada","Visita"];
+var DATA=[];
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hdr(extra){var h={apikey:SB.key,Authorization:"Bearer "+SB.key,"Content-Type":"application/json"};if(extra){for(var k in extra)h[k]=extra[k]}return h}
+function norm(r){var o={};Object.keys(r).forEach(function(k){o[k]=r[k]==null?"":String(r[k])});o.id=r.id;return o}
+function toast(msg,err){var t=document.getElementById("toast");t.textContent=msg;t.className="show"+(err?" err":"");clearTimeout(t._t);t._t=setTimeout(function(){t.className=""},2600)}
+function find(id){for(var i=0;i<DATA.length;i++)if(String(DATA[i].id)===String(id))return DATA[i];return null}
+
+async function cargar(){
+  DATA=SNAP.slice();
+  if(SB.url&&SB.key){
+    try{
+      var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla+"?select=*",{headers:{apikey:SB.key,Authorization:"Bearer "+SB.key}});
+      if(r.ok){DATA=(await r.json()).map(norm);} else {toast("No pude leer Supabase ("+r.status+")",1);}
+    }catch(e){toast("Sin conexión a Supabase",1);}
+  } else {toast("Supabase no configurado",1);}
+  llenar();render();
+}
+
+async function patch(id,fields){
+  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  try{
+    var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla+"?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(fields)});
+    var a=r.ok?await r.json():[];
+    if(r.ok&&a.length){toast("Guardado ✓");return true}
+    toast("No se guardó (revisa permisos RLS)",1);return false;
+  }catch(e){toast("Error de red",1);return false}
+}
+async function insert(row){
+  if(!(SB.url&&SB.key)){toast("Supabase no configurado",1);return false}
+  try{
+    var r=await fetch(SB.url.replace(//+$/,"")+"/rest/v1/"+SB.tabla,{method:"POST",headers:hdr({Prefer:"return=representation"}),body:JSON.stringify(row)});
+    var a=r.ok?await r.json():[];
+    if(r.ok&&a.length){return true}
+    toast("No se pudo agregar ("+r.status+")",1);return false;
+  }catch(e){toast("Error de red",1);return false}
+}
+
+function setCampo(id,campo,val,btn){
+  var r=find(id);if(!r)return;
+  var prev=r[campo];r[campo]=val;render();
+  patch(id,{[campo]:val}).then(function(ok){if(!ok){var rr=find(id);if(rr)rr[campo]=prev;render()}});
+}
+
+function filtrados(){
+  var q=document.getElementById("q").value.toLowerCase();
+  var fe=document.getElementById("fEstado").value,fv=document.getElementById("fVendedor").value;
+  var fr=document.getElementById("fRubro").value,fc=document.getElementById("fCanal").value;
+  var arr=DATA.filter(function(r){
+    if(fe&&(r.estado||"Nuevo")!==fe)return false;
+    if(fv&&(r.vendedor||"")!==fv)return false;
+    if(fr&&r.rubro!==fr)return false;
+    if(fc&&(r.canal||"")!==fc)return false;
+    if(q){var s=(r.negocio+" "+r.telefono+" "+r.direccion+" "+r.ciudad).toLowerCase();if(s.indexOf(q)<0)return false}
+    return true;
+  });
+  var o=document.getElementById("orden").value;
+  arr.sort(function(a,b){
+    if(o==="negocio")return String(a.negocio).localeCompare(String(b.negocio));
+    if(o==="resenas")return (Number(b.resenas)||0)-(Number(a.resenas)||0);
+    if(o==="rating")return (Number(b.rating)||0)-(Number(a.rating)||0);
+    return (b.prioridad||0)-(a.prioridad||0);
+  });
+  return arr;
+}
+
+function info(r){
+  function row(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''}
+  var wa=String(r.telefono||"").replace(/\D/g,"");
+  return '<div class="det"><dl>'+
+    row("Categoría",r.categoria)+row("Dirección",r.direccion)+row("Zona",r.zona)+row("Ciudad",r.ciudad)+
+    row("Teléfono",r.telefono)+row("Email",r.email)+row("Horarios",r.horarios)+
+    row("Instagram",r.instagram)+row("Facebook",r.facebook)+row("Web actual",r.web_actual)+
+    row("Rating",(r.rating?r.rating+" ⭐ ":"")+(r.resenas?"("+r.resenas+" reseñas)":""))+
+    row("Notas",r.notas)+row("Próximo contacto",r.proximo_contacto)+row("Último contacto",r.ultimo_contacto)+
+    '</dl><div class="ctrl">'+
+    (r.maps_url?'<a href="'+esc(r.maps_url)+'" target="_blank" rel="noopener">Ver en Maps →</a>':'')+
+    (wa?' · <a href="https://wa.me/'+wa+'" target="_blank" rel="noopener">WhatsApp →</a>':'')+
+    '</div></div>';
+}
+
+function render(){
+  var list=document.getElementById("list");var items=filtrados();
+  document.getElementById("cnt").textContent=items.length+" de "+DATA.length+" prospectos";
+  if(!items.length){list.innerHTML='<p class="meta">Sin resultados.</p>';return}
+  var html="";
+  items.forEach(function(r){
+    var id=esc(r.id);
+    html+='<div class="card">'+
+      '<div class="card__top"><h3>'+esc(r.negocio)+'</h3>'+
+      '<span class="meta">'+esc(RUBROS[r.rubro]||r.rubro||"")+' · '+esc(r.ciudad||"")+(r.rating?' · ⭐ '+esc(r.rating):"")+(r.resenas?' ('+esc(r.resenas)+')':"")+'</span>'+
+      '<span class="prio" title="Prioridad">'+esc(r.prioridad)+'</span></div>'+
+      '<div class="ctrl estado">'+ESTADOS.map(function(e){return '<button data-act="estado" data-id="'+id+'" data-v="'+e+'"'+(r.estado===e?' class="on"':'')+'>'+e+'</button>'}).join("")+'</div>'+
+      '<div class="ctrl"><span class="mini meta">Vendedor:</span><span class="vend">'+
+        Object.keys(VEND).map(function(k){return '<button data-act="vendedor" data-id="'+id+'" data-v="'+k+'"'+(r.vendedor===k?' class="on"':'')+'>'+VEND[k]+'</button>'}).join("")+
+      '</span><span class="mini meta" style="margin-left:8px">Canal:</span><select data-act="canal" data-id="'+id+'"><option value="">—</option>'+CANALES.map(function(c){return '<option'+(r.canal===c?' selected':'')+'>'+c+'</option>'}).join("")+'</select>'+
+      '<button data-act="det" data-id="'+id+'" style="margin-left:auto">Ver todo ▾</button></div>'+
+      info(r)+'</div>';
+  });
+  list.innerHTML=html;
+}
+
+function llenar(){
+  function opt(sel,val,txt){var o=document.createElement("option");o.value=val;o.textContent=txt;sel.appendChild(o)}
+  ESTADOS.forEach(function(e){opt(document.getElementById("fEstado"),e,e)});
+  Object.keys(VEND).forEach(function(k){opt(document.getElementById("fVendedor"),k,VEND[k])});
+  Object.keys(RUBROS).forEach(function(k){opt(document.getElementById("fRubro"),k,RUBROS[k])});
+  CANALES.forEach(function(c){opt(document.getElementById("fCanal"),c,c)});
+  var sel=document.querySelector('select[name=rubro]');Object.keys(RUBROS).forEach(function(k){opt(sel,k,RUBROS[k])});
+  ["q","fEstado","fVendedor","fRubro","fCanal","orden"].forEach(function(id){var e=document.getElementById(id);e.addEventListener(id==="q"?"input":"change",render)});
+}
+
+document.getElementById("list").addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b)return;
+  var act=b.getAttribute("data-act"),id=b.getAttribute("data-id");
+  if(act==="estado")setCampo(id,"estado",b.getAttribute("data-v"));
+  else if(act==="vendedor")setCampo(id,"vendedor",b.getAttribute("data-v"));
+  else if(act==="det"){var d=b.closest(".card").querySelector(".det");d.classList.toggle("open");b.textContent=d.classList.contains("open")?"Ver menos ▴":"Ver todo ▾"}
+});
+document.getElementById("list").addEventListener("change",function(e){
+  var s=e.target.closest("select[data-act=canal]");if(!s)return;
+  setCampo(s.getAttribute("data-id"),"canal",s.value);
+});
+
+var dlg=document.getElementById("dlg");
+document.getElementById("nuevo").addEventListener("click",function(){dlg.showModal()});
+document.getElementById("cancelar").addEventListener("click",function(){dlg.close()});
+document.getElementById("formNuevo").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var f=e.target,row={};new FormData(f).forEach(function(v,k){row[k]=String(v).trim()||null});
+  if(await insert(row)){toast("Prospecto agregado ✓");dlg.close();f.reset();await cargar()}
+});
+
+cargar();
+</script></body></html>

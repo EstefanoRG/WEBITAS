@@ -4,14 +4,43 @@
 // El panel COMPARTIDO (para ti y tu socio) es el publicado: …/WEBITAS/<codigo>/
 import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, isAbsolute } from "node:path";
 import { execFile } from "node:child_process";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CSV = join(ROOT, "data", "empresas.csv");
+try { process.loadEnvFile?.(join(ROOT, ".env")); } catch {}
+
+// Misma prioridad que el generador.
+const CSV_CANDIDATES = [
+  join(ROOT, "prospectos_consolidado.csv"),
+  join(ROOT, "WEBITAS - prospectos_consolidado.csv"),
+  join(ROOT, "data", "empresas.csv"),
+];
+const CSV = process.env.DATA_CSV
+  ? (isAbsolute(process.env.DATA_CSV) ? process.env.DATA_CSV : join(ROOT, process.env.DATA_CSV))
+  : (CSV_CANDIDATES.find((p) => existsSync(p)) || CSV_CANDIDATES[CSV_CANDIDATES.length - 1]);
 const PORT = process.env.PORT || 5173;
 const config = JSON.parse(await readFile(join(ROOT, "generator", "config.json"), "utf8"));
+
+// Supabase: si hay URL + service key (en .env), el panel local lee y escribe ahí.
+const SB_URL = (process.env.SUPABASE_URL || (config.supabase && config.supabase.url) || "").replace(/\/+$/, "");
+const SB_KEY = process.env.SUPABASE_KEY || "";
+const SB_TABLE = (config.supabase && config.supabase.tabla) || "prospectos";
+const SB_ON = !!(SB_URL && SB_KEY);
+const sbHeaders = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" };
+async function sbRows() {
+  const res = await fetch(`${SB_URL}/rest/v1/${SB_TABLE}?select=*`, { headers: sbHeaders });
+  if (!res.ok) throw new Error("Supabase " + res.status);
+  const rows = await res.json();
+  return rows.map((r) => { const o = {}; for (const [k, v] of Object.entries(r)) o[k] = v == null ? "" : String(v); return o; });
+}
+async function sbPatch(negocio, fields) {
+  const url = `${SB_URL}/rest/v1/${SB_TABLE}?negocio=eq.${encodeURIComponent(negocio)}`;
+  const res = await fetch(url, { method: "PATCH", headers: { ...sbHeaders, Prefer: "return=minimal" }, body: JSON.stringify(fields || {}) });
+  return res.ok;
+}
 
 function parseCSV(text) {
   const rows = []; let row = [], f = "", q = false;
@@ -32,7 +61,11 @@ const quote = (v) => (/[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '
 const serialize = (h, objs) => [h.join(",")].concat(objs.map((o) => h.map((k) => quote(o[k] ?? "")).join(","))).join("\n") + "\n";
 const slugify = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "negocio";
 const isNo = (v) => /^(no|0|false|f|n)$/i.test(String(v || "").trim());
-async function load() { const rows = parseCSV(await readFile(CSV, "utf8")); return { header: rows[0].map((x) => x.trim()), objs: toObj(rows) }; }
+async function load() {
+  if (SB_ON) { const objs = await sbRows(); return { header: objs[0] ? Object.keys(objs[0]) : [], objs }; }
+  const rows = parseCSV(await readFile(CSV, "utf8"));
+  return { header: rows[0].map((x) => x.trim()), objs: toObj(rows) };
+}
 const save = (h, o) => writeFile(CSV, serialize(h, o), "utf8");
 const run = (cmd, args) => new Promise((res) => execFile(cmd, args, { cwd: ROOT, shell: true }, (e, so, se) => res({ ok: !e, log: (so || "") + (se || "") + (e ? "\nERROR: " + e.message : "") })));
 
@@ -88,8 +121,13 @@ async function load(){
       '<td><span class="seen" data-s="'+sl+'">…</span></td>';
     tb.appendChild(tr);
   });
-  document.getElementById("resumen").textContent=rows.length+" negocios";
-  document.querySelectorAll(".seen").forEach(function(el){if(!CNT||!NS){el.textContent="0";return}fetch(CNT+"/"+NS+"/"+el.getAttribute("data-s")).then(function(r){return r.json()}).then(function(x){el.textContent=(x&&typeof x.value==="number")?x.value:"0"}).catch(function(){el.textContent="0"})});
+  var c={};rows.forEach(function(r){var e=r.estado||"Nuevo";c[e]=(c[e]||0)+1});
+  var contactados=(c.Contactado||0)+(c.Interesado||0)+(c.Vendido||0);
+  var vendidos=c.Vendido||0;
+  var pct=function(a,b){return b?Math.round(a/b*100):0};
+  document.getElementById("resumen").textContent=
+    rows.length+" negocios · "+(c.Nuevo||0)+" nuevos · "+contactados+" contactados · "+(c.Interesado||0)+" interesados · "+vendidos+" vendidos · "+pct(vendidos,contactados)+"% cierre";
+  document.querySelectorAll(".seen").forEach(function(el){if(!CNT||!NS){el.textContent="—";return}fetch(CNT+"/"+NS+"/"+el.getAttribute("data-s")).then(function(r){return r.json()}).then(function(x){el.textContent=(x&&typeof x.value==="number")?x.value:"—"}).catch(function(){el.textContent="—"})});
 }
 document.getElementById("tb").addEventListener("click",function(e){var b=e.target.closest("button[data-act=v]");if(b)setF(b.getAttribute("data-n"),{vendedor:b.getAttribute("data-v")})});
 document.getElementById("tb").addEventListener("change",function(e){var c=e.target.closest("input[data-act=g]");if(c)setF(c.getAttribute("data-n"),{generar:c.checked?"":"no"})});
@@ -107,7 +145,9 @@ const server = createServer(async (req, res) => {
     if (req.method === "GET" && (req.url === "/" || req.url.startsWith("/?"))) return send(200, "text/html; charset=utf-8", page());
     if (req.method === "GET" && req.url === "/api/rows") { const { header, objs } = await load(); return send(200, "application/json", JSON.stringify({ header, objs })); }
     if (req.method === "POST" && req.url === "/api/set") {
-      const { negocio, fields } = await body(); const { header, objs } = await load();
+      const { negocio, fields } = await body();
+      if (SB_ON) { const ok = await sbPatch(negocio, fields); return send(200, "application/json", JSON.stringify({ ok })); }
+      const { header, objs } = await load();
       const row = objs.find((o) => o.negocio === negocio); if (row) Object.assign(row, fields || {});
       await save(header, objs); return send(200, "application/json", JSON.stringify({ ok: true }));
     }
@@ -119,4 +159,4 @@ const server = createServer(async (req, res) => {
     send(404, "text/plain", "404");
   } catch (e) { send(500, "text/plain", String(e?.stack || e)); }
 });
-server.listen(PORT, () => console.log(`\n  WEBITAS · Tablero local: http://localhost:${PORT}\n  Panel compartido: ${config.baseUrl}/${config.codigo}/\n`));
+server.listen(PORT, () => console.log(`\n  WEBITAS · Tablero local: http://localhost:${PORT}\n  Fuente: ${SB_ON ? "Supabase " + SB_URL : "CSV " + CSV.replace(ROOT + "\\", "")}\n  Panel compartido: ${config.baseUrl}/${config.codigo}/\n`));

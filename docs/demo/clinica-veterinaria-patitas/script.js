@@ -95,7 +95,7 @@
 
     // Demo sin backend: se arma el mensaje y se abre WhatsApp con todo escrito.
     // Al activar la página se puede reemplazar por fetch("/api/reservas", ...).
-    var wa = "51935634896";
+    var wa = "51999111222";
     var encabezado = "Hola, vi su página web y quiero reservar una cita:";
     var campos = form.querySelectorAll("input, select, textarea");
 

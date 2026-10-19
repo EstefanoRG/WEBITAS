@@ -53,7 +53,7 @@
     if (!form) return;
     var aviso = document.getElementById("form-error");
     var campos = form.querySelectorAll("input[required], textarea[required]");
-    var wa = "51935634896"; // número de Taller Mecánico El Motor (reemplazar si cambia)
+    var wa = "51977333444"; // WhatsApp del vendedor (se reemplaza al generar la demo)
 
     function nombreDe(campo) {
       var label = campo.closest("label");

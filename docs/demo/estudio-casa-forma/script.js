@@ -120,7 +120,7 @@
     if (!form || !status) return;
 
     // Demo sin backend: se arma el mensaje y se abre WhatsApp con todo escrito.
-    var wa = "51981202879";
+    var wa = "51966444555";
     var encabezado = "Hola, vi su página web y quiero cotizar un proyecto de interiores:";
     var campos = form.querySelectorAll("input, select, textarea");
 

@@ -56,7 +56,7 @@
     <span>Consulta nuestros paquetes y promociones</span>
     <a href="#productos">Ver productos →</a>
     <span class="promo__tag">página de muestra</span>
-    <a href="https://wa.me/{{whatsapp}}?text=Hola%2C%20vi%20la%20p%C3%A1gina%20de%20muestra%20de%20{{negocio_url}}%20y%20quiero%20activarla%20con%20{{vendedor_nombre}}." target="_blank" rel="noopener">Activar con {{vendedor_nombre}} →</a>
+    <a href="https://wa.me/{{vendedor_whatsapp}}?text=Hola%2C%20vi%20la%20p%C3%A1gina%20de%20muestra%20de%20{{negocio_url}}%20y%20quiero%20activarla%20con%20{{vendedor_nombre}}." target="_blank" rel="noopener">Activar con {{vendedor_nombre}} →</a>
   </div>
 
   <!-- Header -->
@@ -69,6 +69,7 @@
 
       <nav class="menu" id="menu" aria-label="Principal">
         <a href="#inicio">Inicio</a>
+        <a href="#galeria">Galería</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#productos">Tienda</a>
         <a href="#servicios">Servicios</a>
@@ -113,7 +114,7 @@
         </div>
         <div class="hero__media">
           <div class="hero__frame hero__frame--img">
-            <img class="hero__img" src="img/hero.jpg" alt="{{negocio}}: mecánico trabajando en un vehículo" width="1600" height="1067" loading="eager" decoding="async">
+            <img class="hero__img" src="https://images.pexels.com/photos/3806249/pexels-photo-3806249.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="{{negocio}}: mecánico trabajando en un vehículo" width="1600" height="1067" loading="eager" decoding="async" referrerpolicy="no-referrer">
           </div>
           <div class="hero__card">
             <span class="hero__card-num">{{negocio_mark}}</span>
@@ -123,47 +124,19 @@
       </div>
     </section>
 
-    <!-- MARCAS -->
-    <section class="marcas" aria-label="Marcas que atendemos">
-      <div class="marcas__inner">
-        <div class="marcas__fila">
-          <p class="marcas__label">Atendemos todas las marcas</p>
-          <div class="marquee">
-            <div class="marquee__track marquee__track--autos" data-marquee>
-              <img src="img/toyota.png" alt="Toyota" height="34" loading="lazy" decoding="async">
-              <img src="img/hyundai.png" alt="Hyundai" height="34" loading="lazy" decoding="async">
-              <img src="img/bmw.png" alt="BMW" height="34" loading="lazy" decoding="async">
-              <img src="img/jeep.png" alt="Jeep" height="34" loading="lazy" decoding="async">
-              <img src="img/audi.png" alt="Audi" height="34" loading="lazy" decoding="async">
-              <img src="img/honda.png" alt="Honda" height="34" loading="lazy" decoding="async">
-              <img src="img/peugeot.png" alt="Peugeot" height="34" loading="lazy" decoding="async">
-              <img src="img/bridgestone.png" alt="Bridgestone" height="34" loading="lazy" decoding="async">
-              <img src="img/bosch.png" alt="Bosch" height="34" loading="lazy" decoding="async">
-            </div>
-          </div>
-        </div>
-        <div class="marcas__fila">
-          <p class="marcas__label">Trabajamos con</p>
-          <div class="marquee">
-            <div class="marquee__track marquee__track--sup" data-marquee>
-              <img src="img/mopar.png" alt="Mopar" height="28" loading="lazy" decoding="async">
-              <img src="img/valeo.png" alt="Valeo" height="28" loading="lazy" decoding="async">
-              <img src="img/castrol.png" alt="Castrol" height="28" loading="lazy" decoding="async">
-              <img src="img/denso.png" alt="Denso" height="28" loading="lazy" decoding="async">
-              <img src="img/mobis.png" alt="Mobis" height="28" loading="lazy" decoding="async">
-              <img src="img/mobil.png" alt="Mobil" height="28" loading="lazy" decoding="async">
-              <img src="img/liquimoly.png" alt="Liqui Moly" height="28" loading="lazy" decoding="async">
-              <img src="img/valvoline.png" alt="Valvoline" height="28" loading="lazy" decoding="async">
-              <img src="img/stp.png" alt="STP" height="28" loading="lazy" decoding="async">
-              <img src="img/wurth.png" alt="Würth" height="28" loading="lazy" decoding="async">
-              <img src="img/sonax.png" alt="Sonax" height="28" loading="lazy" decoding="async">
-              <img src="img/bluechem.png" alt="Blue Chem" height="28" loading="lazy" decoding="async">
-              <img src="img/hagen.png" alt="Hagen" height="28" loading="lazy" decoding="async">
-              <img src="img/mando.png" alt="Mando" height="28" loading="lazy" decoding="async">
-              <img src="img/reinigen.png" alt="Reinigen" height="28" loading="lazy" decoding="async">
-              <img src="img/vextron.png" alt="Vextron" height="28" loading="lazy" decoding="async">
-            </div>
-          </div>
+    <!-- GALERÍA -->
+    <section class="galeria" id="galeria" aria-label="Nuestro taller">
+      <div class="wrap">
+        <header class="head">
+          <p class="eyebrow eyebrow--dark"><span></span>Nuestro taller</p>
+          <h2 class="head__title">Así trabajamos</h2>
+          <p class="head__sub">Mantenimiento, frenos, motor y lavado. Todo en un solo lugar.</p>
+        </header>
+        <div class="galeria__grid">
+          <figure class="galeria__item"><img src="https://images.pexels.com/photos/8985452/pexels-photo-8985452.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Mecánico revisando el motor de un vehículo" width="800" height="600" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>
+          <figure class="galeria__item"><img src="https://images.pexels.com/photos/4488637/pexels-photo-4488637.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Auto dentro del taller automotriz" width="800" height="600" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>
+          <figure class="galeria__item"><img src="https://images.pexels.com/photos/3807386/pexels-photo-3807386.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Técnico inflando un neumático" width="800" height="600" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>
+          <figure class="galeria__item"><img src="https://images.pexels.com/photos/3354648/pexels-photo-3354648.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lavado de auto con espuma" width="800" height="600" loading="lazy" decoding="async" referrerpolicy="no-referrer"></figure>
         </div>
       </div>
     </section>
@@ -395,7 +368,7 @@
 
     <div class="pie__activar">
       <p><strong>¿Es tu negocio?</strong> Esta página es una muestra: se activa con tus fotos, tus precios y tu dominio propio.</p>
-      <a class="btn btn--primary btn--sm" href="https://wa.me/{{whatsapp}}?text=Hola%2C%20vi%20el%20redise%C3%B1o%20de%20{{negocio_url}}%20y%20quiero%20activarlo." target="_blank" rel="noopener">Activar con {{vendedor_nombre}} →</a>
+      <a class="btn btn--primary btn--sm" href="https://wa.me/{{vendedor_whatsapp}}?text=Hola%2C%20vi%20el%20redise%C3%B1o%20de%20{{negocio_url}}%20y%20quiero%20activarlo." target="_blank" rel="noopener">Activar con {{vendedor_nombre}} →</a>
     </div>
 
     <p class="pie__legal">© <span id="anio"></span> {{negocio}}. Todos los derechos reservados.</p>

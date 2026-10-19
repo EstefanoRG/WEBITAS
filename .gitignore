@@ -3,17 +3,28 @@ node_modules/
 Thumbs.db
 *.log
 
+# Secretos (Supabase keys, etc.)
+.env
+.env.local
+
 # Carpeta local de TK Motors (no versionar, no publicar)
 tk-motors/
+
+# Sitio real de cliente (no va al repo de demos; si no, "Publicar" lo sube)
+lolita-pet/
 
 # Documentos personales / de planificación (no van al repo)
 PENDIENTES.md
 GUIA-EQUIPO.md
 AUDITORIA-TKMOTORS.md
+AUDITORIA-WEBITAS.md
 CALCULADORA-PRECIOS.md
 calculadora-precios.html
 GUIA-VENDER-PAGINAS-WEB.md
 PLANTILLA-LEADS.csv
+
+# Datos reales de prospectos (contienen PII; la fuente compartida es el Google Sheet / Supabase)
+*prospectos_consolidado.csv
 
 # Script de un solo uso (ya ejecutado; contiene refs de TK)
 tools/tokenize.mjs

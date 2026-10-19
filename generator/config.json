@@ -3,10 +3,11 @@
   "baseUrl": "https://estefanorg.github.io/WEBITAS",
   "codigo": "x7q2k9p4",
   "noindex": true,
-  "counter": {
-    "namespace": "webitas-estefanorg",
-    "hit": "https://abacus.jasoncameron.dev/hit",
-    "get": "https://abacus.jasoncameron.dev/get"
+  "counter": null,
+  "supabase": {
+    "url": "https://kktinamqdrkzjyzxpctf.supabase.co",
+    "tabla": "prospectos",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdGluYW1xZHJremp5enhwY3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDc4MzksImV4cCI6MjEwNzkyMzgzOX0.Vl6OoXAxeDmcvRnCzZ8F5iqjPlxdWYIrGYXZDeKYTLI"
   },
   "vendedorDefault": "estefano",
   "vendedores": {
@@ -22,9 +23,25 @@
     }
   },
   "rubros": {
-    "veterinaria": { "plantilla": "veterinaria", "etiqueta": "Veterinaria", "emoji": "🐾" },
-    "dental": { "plantilla": "dental", "etiqueta": "Clínica dental", "emoji": "🦷" },
-    "taller": { "plantilla": "taller", "etiqueta": "Taller automotriz", "emoji": "🔧" },
-    "interiores": { "plantilla": "interiores", "etiqueta": "Diseño de interiores", "emoji": "🛋️" }
+    "veterinaria": {
+      "plantilla": "veterinaria",
+      "etiqueta": "Veterinaria",
+      "emoji": "🐾"
+    },
+    "dental": {
+      "plantilla": "dental",
+      "etiqueta": "Clínica dental",
+      "emoji": "🦷"
+    },
+    "taller": {
+      "plantilla": "taller",
+      "etiqueta": "Taller automotriz",
+      "emoji": "🔧"
+    },
+    "interiores": {
+      "plantilla": "interiores",
+      "etiqueta": "Diseño de interiores",
+      "emoji": "🛋️"
+    }
   }
 }
