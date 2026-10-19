@@ -20,10 +20,13 @@ const DEMO_DIR = join(DOCS, "demo");
 const config = JSON.parse(await readFile(join(ROOT, "generator", "config.json"), "utf8"));
 const CODIGO = config.codigo;
 
-// Supabase: URL pública + clave. La service_role (env) manda; si no hay, uso la
-// anon pública (solo LEE) para que el build funcione sin secretos (p. ej. en CI).
-const SB_URL = process.env.SUPABASE_URL || (config.supabase && config.supabase.url) || "";
-const SB_KEY = process.env.SUPABASE_KEY || (config.supabase && config.supabase.anonKey) || "";
+// Supabase: URL y clave. Para LEER usamos siempre el proyecto de config.json,
+// que es el mismo que escribe el Gestor (así el vendedor asignado nunca se
+// desincroniza). Las variables de entorno solo sirven de respaldo si no hay
+// config (otro despliegue).
+const SB_URL = (config.supabase && config.supabase.url) || process.env.SUPABASE_URL || "";
+const SB_KEY =
+  (config.supabase && config.supabase.anonKey) || process.env.SUPABASE_KEY || "";
 const SB_TABLE = (config.supabase && config.supabase.tabla) || "prospectos";
 const SB_ON = !!(SB_URL && SB_KEY) && !process.env.DATA_CSV;
 
