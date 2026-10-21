@@ -140,6 +140,17 @@ function tokensFor(row) {
   const vk = (row.vendedor || config.vendedorDefault || "estefano").toLowerCase();
   const v = config.vendedores[vk] || config.vendedores[config.vendedorDefault];
   const negocio = row.negocio || "Mi Negocio";
+  // Nombre visible: quita paréntesis (planchado, servicios…) y colas tras guiones
+  // para que el h1 y la marca del header no se partan en 5 líneas.
+  const negocioCorto = (() => {
+    const limpio = String(negocio)
+      .replace(/\s*\([^)]*\)/g, " ")
+      .replace(/\s+[|·–—]\s+.*$/, " ")
+      .replace(/\s+-\s+.*$/, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return limpio.length >= 3 ? limpio : String(negocio).trim();
+  })();
   const ciudad = row.ciudad || "Lima";
   const direccion = row.direccion || ciudad + ", Perú";
   // Teléfono/WhatsApp del NEGOCIO (para NAP, tel:, WhatsApp y JSON-LD).
@@ -149,6 +160,7 @@ function tokensFor(row) {
   return {
     slug: row._slug,
     negocio, negocio_url: enc(negocio), negocio_mark: mark(negocio),
+    negocio_corto: negocioCorto, negocio_corto_url: enc(negocioCorto),
     ciudad, zona: row.zona || ciudad,
     direccion, direccion_url: enc(direccion),
     telefono: telTxt, telefono_tel: telDig ? "+" + telDig : "", whatsapp: telDig,
