@@ -9,7 +9,7 @@ Static one-page website for a veterinary clinic (Spanish, `lang="es"`). Three fi
 
 ## This is a reusable template — tokens are intentional
 Do not "fix" these; `generator/build.mjs` fills them per business:
-- **Business (CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{negocio_corto}}`, `{{ciudad}}`, `{{zona}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`, `{{maps_url}}`, `{{categoria}}`.
+- **Business (CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{negocio_corto}}`, `{{ciudad}}`, `{{zona}}`, `{{ubicacion}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`, `{{maps_url}}`, `{{categoria}}`.
 - **Trust data:** `{{rating}}`, `{{resenas}}`, `{{resenas_txt}}`. They come from the Sheet/CSV; if a business has no rating, the rating block is hidden with the conditional syntax instead of showing “0” or a fake review.
 - **Conditionals:** `{{#rating}}…{{/rating}}` renders only when the token has a value; `{{^rating}}…{{/rating}}` renders only when it is empty. `fill()` in `generator/build.mjs` implements both. Do not nest conditionals (the regex is single-pass).
 - **Contact / NAP:** `{{telefono}}` (display), `{{telefono_tel}}` (for `tel:`), `{{whatsapp}}` (digits, for `wa.me`). All come from the **business's own phone** and are used in hero, footer, float button, form and JSON-LD.

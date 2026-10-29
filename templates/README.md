@@ -15,6 +15,7 @@ El generador expone estos tokens (ver `tokensFor()` en `generator/build.mjs`):
 | `{{negocio_mark}}` | derivado de `negocio` | Iniciales para el logo (ej. `CD`) |
 | `{{ciudad}}` | CSV `ciudad` | Ciudad (SEO, textos) |
 | `{{zona}}` | CSV `zona` o `ciudad` | Distrito/zona |
+| `{{ubicacion}}` | derivado | `zona, ciudad`, sin repetir si son iguales (evita “Lince, Lince”) |
 | `{{direccion}}` | CSV `direccion` | Dirección (NAP, footer, JSON-LD) |
 | `{{direccion_url}}` | derivado de `direccion` | Dirección en URL-encoded (mapas) |
 | `{{horarios}}` | CSV `horarios` | Horario |

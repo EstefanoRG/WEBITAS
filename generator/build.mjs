@@ -152,6 +152,9 @@ function tokensFor(row) {
     return limpio.length >= 3 ? limpio : String(negocio).trim();
   })();
   const ciudad = row.ciudad || "Lima";
+  const zona = row.zona || ciudad;
+  // Evita títulos tipo "Lince, Lince" cuando zona y ciudad son lo mismo.
+  const ubicacion = zona.toLowerCase() === ciudad.toLowerCase() ? zona : zona + ", " + ciudad;
   const direccion = row.direccion || ciudad + ", Perú";
   // Teléfono/WhatsApp del NEGOCIO (para NAP, tel:, WhatsApp y JSON-LD).
   // El número del VENDEDOR solo se usa en el botón "Activar mi página".
@@ -181,7 +184,7 @@ function tokensFor(row) {
     slug: row._slug,
     negocio, negocio_url: enc(negocio), negocio_mark: mark(negocio),
     negocio_corto: negocioCorto, negocio_corto_url: enc(negocioCorto),
-    ciudad, zona: row.zona || ciudad,
+    ciudad, zona, ubicacion,
     direccion, direccion_url: enc(direccion), maps_url: mapsUrl,
     categoria, rating, resenas, resenas_txt: resenas ? resenas + " reseñas" : "Reseñas",
     telefono: telTxt, telefono_tel: telDig ? "+" + telDig : "", whatsapp: telDig,
