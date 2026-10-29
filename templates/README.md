@@ -21,12 +21,26 @@ El generador expone estos tokens (ver `tokensFor()` en `generator/build.mjs`):
 | `{{email}}` | CSV `email` | Correo |
 | `{{instagram_user}}` / `{{instagram_url}}` | CSV | Redes |
 | `{{facebook_url}}` | CSV | Redes |
+| `{{maps_url}}` | CSV `maps_url` (o búsqueda por nombre + dirección) | “Ver reseñas” / “Cómo llegar” |
+| `{{rating}}` | CSV `rating` | Nota real de Google (ej. `4.7`) |
+| `{{resenas}}` / `{{resenas_txt}}` | CSV `resenas` | Número de reseñas y texto (“58 reseñas”) |
+| `{{categoria}}` | CSV `categoria` | Rubro visible en la demo |
+| `{{redes}}` | derivado | `1` si hay Instagram o Facebook; para condicionales |
 | **`{{telefono}}`** | CSV `telefono` **(negocio)** | Teléfono a mostrar (NAP, footer) |
 | **`{{telefono_tel}}`** | CSV `telefono` **(negocio)** | Teléfono con `+` para `href="tel:"` y JSON-LD |
 | **`{{whatsapp}}`** | CSV `telefono` **(negocio)** | Solo dígitos, para `wa.me` (botones del negocio) |
 | **`{{vendedor_nombre}}`** | `config.json` | Nombre del vendedor (CTA "Activar") |
 | **`{{vendedor_whatsapp}}`** | `config.json` | WhatsApp del vendedor (**solo** en el CTA "Activar") |
 | `{{year}}` | año actual | Footer legal |
+
+### Condicionales
+`fill()` en `generator/build.mjs` también entiende bloques condicionales:
+- `{{#rating}}…{{/rating}}` se muestra solo si el token tiene valor.
+- `{{^rating}}…{{/rating}}` se muestra solo si está vacío.
+
+Sirven para no publicar “0 reseñas”, redes sin enlace o un rating inventado. No anidar condicionales
+(el reemplazo es de una sola pasada). Si un bloque necesita dos condiciones, se resuelve con un token
+derivado (como `{{redes}}`) o en el generador.
 
 ### Regla de oro
 - **El teléfono/WhatsApp del negocio** (`{{telefono}}`, `{{telefono_tel}}`, `{{whatsapp}}`) va en todo el
@@ -37,6 +51,8 @@ El generador expone estos tokens (ver `tokensFor()` en `generator/build.mjs`):
 ## Datos que NO son tokens (contenido de relleno)
 - **Testimonios y estadísticas** de las plantillas son de ejemplo. Al vender, reemplázalos por datos
   reales del negocio o **elimínalos**; no publiques testimonios ni cifras inventadas como si fueran reales.
+  La plantilla de veterinaria ya usa el rating/reseñas reales y una sección de confianza en lugar de
+  testimonios inventados.
 - Las imágenes son de stock (Unsplash/Pexels). Reemplázalas por fotos reales antes de publicar.
 - Las demos van con `noindex` y `canonical` vacío a propósito.
 

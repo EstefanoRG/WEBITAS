@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg: #f4efe6;
   --surface: #fffbf5;
   --surface-2: #ebe3d4;
@@ -10,6 +11,8 @@
   --primary-soft: #e4eee8;
   --accent: #9e462d;
   --accent-hover: #833a25;
+  --emergency: #8f3d26;
+  --gold: #c9882f;
   --ok: #2f6b4f;
   --danger: #b42318;
 
@@ -57,6 +60,7 @@
    negocio (verde petróleo y terracota) se mantienen; el acento se aclara
    para poder leerlo sobre el fondo oscuro. */
 :root[data-tema="oscuro"] {
+  color-scheme: dark;
   --bg: #111a15;
   --surface: #17231c;
   --surface-2: #1d2c23;
@@ -92,12 +96,20 @@ body {
   color: var(--text);
   background: var(--bg);
   min-height: 100svh;
+  font-feature-settings: "kern" 1;
 }
 
 img {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+img.is-missing {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: 16px;
 }
 
 a {
@@ -133,6 +145,17 @@ h3 {
   font-weight: 600;
   line-height: var(--lh-tight);
   letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a,
+button,
+summary {
+  touch-action: manipulation;
 }
 
 :focus-visible {
@@ -194,13 +217,14 @@ h3 {
 }
 
 .btn--ghost {
-  background: transparent;
+  background: rgba(18, 30, 24, 0.38);
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
 }
 
 .btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 30, 24, 0.58);
 }
 
 .site-header {
@@ -213,6 +237,18 @@ h3 {
   background: transparent;
   transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
     backdrop-filter var(--dur) var(--ease);
+}
+
+/* Sobre la foto, el nombre y el menú necesitan un poco de sombra para no
+   perderse en las zonas claras del hero. Al hacer scroll desaparece. */
+.site-header:not(.is-scrolled) .logo,
+.site-header:not(.is-scrolled) .nav__link,
+.site-header:not(.is-scrolled) .tema-toggle {
+  text-shadow: 0 1px 2px rgba(10, 20, 15, 0.4);
+}
+
+body.nav-open {
+  overflow: hidden;
 }
 
 .site-header.is-scrolled {
@@ -247,12 +283,38 @@ h3 {
   color: #fff;
 }
 
+/* El cuadrado de la marca va siempre en verde, aunque el texto del logo sea
+   blanco sobre el hero. Así la huella clara nunca desaparece. */
+.logo__mark {
+  color: var(--primary);
+}
+
+/* Sobre el hero (header sin fondo) se invierte: cuadrado crema y huella verde,
+   para que la marca no se pierda en la foto. */
+.site-header:not(.is-scrolled) .logo__mark {
+  color: #f4efe6;
+}
+
+.site-header:not(.is-scrolled) .logo__mark svg g {
+  fill: var(--primary);
+}
+
 .site-header.is-scrolled .logo {
   color: var(--primary);
 }
 
 .logo--footer {
   color: #f4efe6;
+}
+
+/* En el footer el bloque va en crema y la huella en verde: si ambos usan
+   currentColor, la huella desaparece sobre el cuadrado. */
+.logo--footer .logo__mark {
+  color: #f4efe6;
+}
+
+.logo--footer .logo__mark svg g {
+  fill: var(--primary);
 }
 
 .logo__text {
@@ -275,6 +337,10 @@ h3 {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.nav__note {
+  display: none;
 }
 
 .nav__link {
@@ -380,8 +446,15 @@ h3 {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(26, 42, 34, 0.55) 0%, rgba(26, 42, 34, 0.2) 36%, rgba(26, 42, 34, 0.76) 100%),
-    linear-gradient(90deg, rgba(26, 42, 34, 0.42) 0%, transparent 58%);
+    /* Arriba: scrim para que el header fijo se lea sobre la foto. */
+    linear-gradient(180deg, rgba(18, 30, 24, 0.86) 0%, rgba(18, 30, 24, 0.52) 12%, rgba(18, 30, 24, 0.12) 34%, rgba(18, 30, 24, 0.78) 100%),
+    linear-gradient(90deg, rgba(18, 30, 24, 0.55) 0%, rgba(18, 30, 24, 0.18) 55%, transparent 78%);
+}
+
+.hero__content h1,
+.hero__content .hero__lead,
+.hero__content .hero__kicker {
+  text-shadow: 0 1px 3px rgba(10, 20, 15, 0.35);
 }
 
 .hero__content {
@@ -469,6 +542,65 @@ h3 {
   0% { transform: translateY(0); opacity: 1; }
   70% { transform: translateY(10px); opacity: 0; }
   100% { transform: translateY(0); opacity: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   FRANJA DE CONFIANZA (justo debajo del hero)
+   Datos reales del negocio: reseñas de Google, ubicación y teléfono.
+--------------------------------------------------------------------------- */
+.trust {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.trust__inner {
+  width: min(100% - 2 * var(--page-pad), var(--max));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--line);
+  border-inline: 1px solid var(--line);
+}
+
+.trust__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 16px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.35;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.trust__item:hover {
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+.trust__item strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.trust__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+}
+
+@media (min-width: 860px) {
+  .trust__inner {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .section {
@@ -597,8 +729,98 @@ h3 {
   font-size: 0.95rem;
 }
 
-:root[data-tema="oscuro"] .service-card__icon {
+.services__note {
+  margin-top: var(--sp-6);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.services__note a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.services__note a:hover {
+  color: var(--accent-hover);
+}
+
+:root[data-tema="oscuro"] .service-card__icon,
+:root[data-tema="oscuro"] .info-list__icon {
   color: #e3efe7;
+}
+
+:root[data-tema="oscuro"] .stats__value,
+:root[data-tema="oscuro"] .gallery__quote p {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   URGENCIAS: una banda de conversión, no un banner decorativo.
+--------------------------------------------------------------------------- */
+.emergency {
+  background: var(--emergency);
+  color: #fff;
+}
+
+.emergency__inner {
+  width: min(100% - 2 * var(--page-pad), var(--max));
+  margin-inline: auto;
+  padding: clamp(36px, 5vw, 60px) 0;
+  display: grid;
+  grid-template-columns: 1.35fr auto;
+  gap: clamp(24px, 4vw, 48px);
+  align-items: center;
+}
+
+.emergency__kicker {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffd7c9;
+}
+
+.emergency h2 {
+  margin-top: 8px;
+  font-size: var(--fs-2xl);
+  max-width: 18ch;
+}
+
+.emergency__copy > p:last-child {
+  margin-top: 10px;
+  max-width: 58ch;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+}
+
+.emergency__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn--light {
+  background: #fff;
+  color: var(--emergency);
+  box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.45);
+}
+
+.btn--light:hover {
+  background: #fdf6ee;
+  transform: translateY(-1px);
+}
+
+.emergency__wa {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.emergency__wa:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .gallery {
@@ -710,7 +932,7 @@ h3 {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--sp-4);
   margin-top: var(--sp-7);
 }
@@ -726,6 +948,22 @@ h3 {
   font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem);
   color: var(--primary);
   letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats__star {
+  color: var(--gold);
+  font-size: 0.6em;
+  vertical-align: 0.18em;
+}
+
+.stats__value--text {
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 1rem + 0.3vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .stats__label {
@@ -735,58 +973,176 @@ h3 {
   color: var(--muted);
 }
 
-.testimonials {
+.family__reviews {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-sm);
+}
+
+.family__reviews a,
+.info-list__body a,
+.cta__contact a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.family__reviews a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+:root[data-tema="oscuro"] .family__reviews a {
+  color: #e9a087;
+}
+
+/* ---------------------------------------------------------------------------
+   CONFIANZA: reseñas reales + datos de visita. Reemplaza los testimonios
+   inventados por información que el negocio sí puede respaldar.
+--------------------------------------------------------------------------- */
+.confidence {
   background: var(--surface);
 }
 
-.testimonials__grid {
+.confidence__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--sp-5);
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(24px, 4vw, 56px);
   margin-top: var(--sp-7);
+  align-items: start;
 }
 
-.testimonial-card {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 28px;
-  box-shadow: var(--shadow-soft);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-
-.testimonial-card:hover {
-  transform: translateY(-4px);
+.rating-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: var(--radius-lg);
+  color: #fff;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(210, 120, 90, 0.34) 0, transparent 48%),
+    linear-gradient(160deg, var(--primary) 0%, #16241d 100%);
   box-shadow: var(--shadow);
 }
 
-.testimonial-card__text {
-  font-size: 1.05rem;
-  color: var(--text);
+.rating-card__label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f0c9bb;
 }
 
-.testimonial-card__meta {
+.rating-card__score {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: var(--sp-5);
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.testimonial-card__meta img {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--surface-2);
+.rating-card__star {
+  align-self: center;
+  color: #f2b544;
+  font-size: 1.9rem;
+  line-height: 1;
 }
 
-.testimonial-card__name {
+.rating-card__value {
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 6vw, 4.4rem);
   font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
-.testimonial-card__pet {
-  font-size: var(--fs-sm);
+.rating-card__of {
+  font-size: var(--fs-md);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.rating-card__score--text {
+  display: block;
+  font-size: var(--fs-2xl);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.rating-card__meta {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.95rem;
+}
+
+.rating-card .btn {
+  margin-top: var(--sp-5);
+  background: #fff;
+  color: var(--primary);
+}
+
+.rating-card .btn:hover {
+  background: #f3ecdc;
+}
+
+.rating-card__note {
+  margin-top: 12px;
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.info-list {
+  border-top: 1px solid var(--line);
+}
+
+.info-list__item {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.info-list__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.info-list__body h3 {
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--muted);
+}
+
+.info-list__body p {
+  margin-top: 2px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.info-list__body a {
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.info-list__body a:hover {
+  color: var(--accent-hover);
+}
+
+:root[data-tema="oscuro"] .info-list__body a {
+  color: #e9a087;
 }
 
 .cta {
@@ -811,7 +1167,9 @@ h3 {
 .cta__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(26, 42, 34, 0.62) 0%, rgba(26, 42, 34, 0.82) 100%);
+  background:
+    linear-gradient(180deg, rgba(26, 42, 34, 0.56) 0%, rgba(26, 42, 34, 0.8) 100%),
+    linear-gradient(90deg, rgba(26, 42, 34, 0.34) 0%, transparent 58%);
 }
 
 .cta__inner {
@@ -839,6 +1197,28 @@ h3 {
   margin-top: var(--sp-4);
   max-width: 36ch;
   color: rgba(255, 255, 255, 0.86);
+}
+
+.cta__contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--sp-5);
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cta__contact a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.cta__contact a:hover {
+  color: #f0c9bb;
 }
 
 .form {
@@ -923,6 +1303,26 @@ h3 {
   color: var(--danger);
 }
 
+.form__optional {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.78em;
+}
+
+.form__note {
+  margin-top: 12px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.form__field input[type="date"] {
+  color-scheme: light;
+}
+
+:root[data-tema="oscuro"] .form__field input[type="date"] {
+  color-scheme: dark;
+}
+
 .site-footer {
   background: var(--primary);
   color: rgba(244, 239, 230, 0.88);
@@ -961,8 +1361,20 @@ h3 {
 }
 
 .site-footer__links a,
+.site-footer__col p a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+
 .site-footer__col p {
-  min-height: 28px;
+  margin-top: 2px;
+}
+
+.site-footer__social-empty {
+  max-width: 24ch;
+  font-size: var(--fs-sm);
+  color: rgba(244, 239, 230, 0.72);
 }
 
 .social {
@@ -995,8 +1407,8 @@ h3 {
 
 .wa-float {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: calc(20px + env(safe-area-inset-right, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   width: 52px;
   height: 52px;
@@ -1006,12 +1418,20 @@ h3 {
   background: #128c7e;
   color: #fff;
   box-shadow: 0 12px 24px -12px rgba(18, 140, 126, 0.8);
-  transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+  transition: transform var(--dur) var(--ease), background var(--dur) var(--ease),
+    opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
 }
 
 .wa-float:hover {
   transform: translateY(-2px) scale(1.04);
   background: #0e7a6e;
+}
+
+.wa-float.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.92);
+  pointer-events: none;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1047,7 +1467,8 @@ h3 {
 .barra-dueno a {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
+  gap: 0.3em;
+  min-height: 40px;
   padding: 0 14px;
   border-radius: var(--radius-full);
   background: #f3ecdc;
@@ -1181,28 +1602,6 @@ h3 {
   color: #f0c9bb;
 }
 
-.franja__cols {
-  display: grid;
-  gap: var(--sp-5);
-  margin-top: var(--sp-7);
-  padding-top: var(--sp-7);
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  grid-template-columns: 1fr;
-}
-
-.franja__cols h3 {
-  font-family: var(--font-body);
-  font-size: var(--fs-md);
-  font-weight: 700;
-  color: #f0c9bb;
-}
-
-.franja__cols p {
-  margin-top: 6px;
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.72);
-}
-
 .franja__cta {
   margin-top: var(--sp-7);
   text-align: center;
@@ -1212,8 +1611,11 @@ h3 {
   .franja__chips {
     grid-template-columns: 1fr 1fr;
   }
-  .franja__cols {
-    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 1000px) {
+  .franja__chips {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -1359,6 +1761,11 @@ section[id] {
 
   .nav.is-open {
     display: flex;
+    height: calc(100svh - var(--barra-h) - var(--header-h));
+    max-height: calc(100svh - var(--barra-h) - var(--header-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 32px;
   }
 
   .nav__list {
@@ -1372,6 +1779,24 @@ section[id] {
     color: var(--text);
   }
 
+  .nav__note {
+    display: block;
+    margin-top: auto;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+
+  .nav__note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .nav__cta {
     width: 100%;
   }
@@ -1379,7 +1804,7 @@ section[id] {
 
 @media (max-width: 1023px) {
   .services__grid,
-  .testimonials__grid,
+  .confidence__grid,
   .cta__inner,
   .family__grid,
   .site-footer__inner {
@@ -1437,32 +1862,110 @@ section[id] {
   }
 
   .hero__actions .btn,
-  .form__actions .btn {
+  .form__actions .btn,
+  .emergency__actions .btn {
     width: 100%;
   }
 
   .services__grid,
-  .testimonials__grid,
-  .stats {
+  .confidence__grid,
+  .emergency__inner {
     grid-template-columns: 1fr;
   }
 
-  .gallery__stage {
-    grid-template-columns: 1fr;
+  /* Tarjetas compactas: icono a la izquierda y texto a la derecha. Seis
+     tarjetas altas hacían la sección innecesariamente larga en el celular. */
+  .service-card {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    row-gap: 2px;
+    align-items: start;
+    padding: 16px 16px 18px;
   }
 
-  .gallery__item--tall,
-  .gallery__item--wide,
-  .gallery__item--square,
-  .gallery__quote {
+  .service-card__icon {
     grid-column: 1;
-    grid-row: auto;
+    grid-row: 1 / 3;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0;
+    border-radius: 12px;
+  }
+
+  .service-card__title {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 1.05rem;
+    margin-bottom: 0;
+  }
+
+  .service-card__text {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .service-card::after {
+    display: none;
+  }
+
+  .service-card:hover {
+    transform: none;
+  }
+
+  /* El recorte centrado de la foto dejaba solo pelo y brazo. En vertical
+     movemos el foco al veterinario y al perro. */
+  .hero__img {
+    object-position: 40% 42%;
+  }
+
+  .trust__item {
+    min-height: 56px;
+    padding: 10px 14px;
+  }
+
+  /* Galería en mosaico de 2 columnas: más compacta que 4 bloques apilados. */
+  .gallery__stage {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+  }
+
+  .gallery__quote {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding: 0 0 4px;
+    max-width: none;
+  }
+
+  .gallery__item--tall {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    aspect-ratio: auto;
+    max-width: none;
+  }
+
+  .gallery__item--wide {
+    grid-column: 2;
+    grid-row: 2;
+    aspect-ratio: 4 / 3;
+    max-width: none;
+  }
+
+  .gallery__item--square {
+    grid-column: 2;
+    grid-row: 3;
+    aspect-ratio: 1;
     max-width: none;
     justify-self: stretch;
   }
 
-  .gallery__item--tall {
-    aspect-ratio: 4 / 5;
+  .gallery__img {
+    height: 112%;
+    margin-top: -6%;
   }
 
   .scroll-hint {
@@ -1470,21 +1973,79 @@ section[id] {
   }
 
   .cta__inner {
-    padding-bottom: 120px;
+    padding-bottom: 64px;
   }
 
   .form {
-    margin-bottom: 12px;
+    margin-bottom: 0;
     padding-bottom: 28px;
   }
 
   .form__actions {
-    padding-bottom: 56px;
+    padding-bottom: 0;
   }
 
   .wa-float {
-    right: 16px;
-    bottom: 16px;
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* A 360 px el nombre completo no cabe junto al toggle de tema; se prioriza
+   el nombre del negocio y el menú. El modo oscuro sigue en pantallas mayores. */
+@media (max-width: 380px) {
+  .tema-toggle {
+    display: none;
+  }
+}
+
+/* Pantallas de 360 px: el hero debe dejar ver los dos botones sin scrollear. */
+@media (max-width: 420px) {
+  :root {
+    --fs-4xl: clamp(1.95rem, 8.2vw, 2.3rem);
+  }
+
+  .logo__text {
+    font-size: 0.88rem;
+  }
+
+  .barra-dueno {
+    gap: 4px 8px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  .barra-dueno a {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+  }
+
+  .barra-dueno__vendor {
+    display: none;
+  }
+
+  .hero__kicker {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+
+  .hero__lead {
+    font-size: 1rem;
+  }
+
+  .hero__content {
+    margin-bottom: 40px;
+  }
+
+  .hero__actions {
+    margin-top: var(--sp-5);
+  }
+}
+
+@media (max-width: 340px) {
+  .logo__text {
+    font-size: 0.82rem;
   }
 }
 

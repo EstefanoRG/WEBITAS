@@ -157,21 +157,53 @@ function tokensFor(row) {
   // El número del VENDEDOR solo se usa en el botón "Activar mi página".
   const telDig = digits(row.telefono);
   const telTxt = String(row.telefono || "").trim();
+  // Datos de confianza que ya vienen del CSV/Sheet. Sirven para que la demo
+  // no dependa de testimonios o cifras inventadas.
+  const rating = String(row.rating || "").replace(",", ".").trim();
+  const resenas = digits(row.resenas);
+  const categoria = String(row.categoria || (config.rubros[(row.rubro || "").toLowerCase()] || {}).etiqueta || "").trim();
+  const mapsUrl =
+    String(row.maps_url || "").trim() ||
+    (direccion ? "https://www.google.com/maps/search/?api=1&query=" + enc(negocio + " " + direccion) : "");
+  // Las columnas `instagram`/`facebook` a veces traen un usuario y a veces la
+  // URL completa. Normalizamos sin duplicar el dominio ("facebook.com/https://…").
+  const redUrl = (url, user, dominio) => {
+    const directa = String(url || "").trim();
+    const usuario = String(user || "").replace(/^@/, "").trim();
+    const valor = directa && directa !== "#" ? directa : usuario;
+    if (!valor) return "";
+    return /^https?:\/\//i.test(valor) ? valor : "https://" + dominio + "/" + valor;
+  };
+  const igUser = String(row.instagram || "").replace(/^@/, "").trim();
+  const igUrl = redUrl(row.instagram_url, row.instagram, "instagram.com");
+  const fbUrl = redUrl(row.facebook_url, row.facebook, "facebook.com");
   return {
     slug: row._slug,
     negocio, negocio_url: enc(negocio), negocio_mark: mark(negocio),
     negocio_corto: negocioCorto, negocio_corto_url: enc(negocioCorto),
     ciudad, zona: row.zona || ciudad,
-    direccion, direccion_url: enc(direccion),
+    direccion, direccion_url: enc(direccion), maps_url: mapsUrl,
+    categoria, rating, resenas, resenas_txt: resenas ? resenas + " reseñas" : "Reseñas",
     telefono: telTxt, telefono_tel: telDig ? "+" + telDig : "", whatsapp: telDig,
     vendedor_nombre: v.nombre, vendedor_whatsapp: v.whatsapp,
     email: row.email || "", horarios: row.horarios || "",
-    instagram_user: row.instagram || "", instagram_url: row.instagram_url || "#",
-    facebook_url: row.facebook || "#",
+    instagram_user: igUser, instagram_url: igUrl,
+    facebook_url: fbUrl, redes: igUrl || fbUrl ? "1" : "",
     year: String(new Date().getFullYear()),
   };
 }
-const fill = (t, tok) => t.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (m, k) => (k in tok ? tok[k] : m));
+// Bloques condicionales: {{#token}}…{{/token}} solo si el token tiene valor,
+// {{^token}}…{{/token}} solo si está vacío. Después se reemplazan los tokens
+// normales. Así una demo no muestra "0 reseñas" ni redes sin enlace.
+const fill = (t, tok) =>
+  t
+    .replace(/\{\{#\s*([\w.]+)\s*\}\}([\s\S]*?)\{\{\/\s*\1\s*\}\}/g, (m, k, body) =>
+      String(tok[k] ?? "").trim() ? body : ""
+    )
+    .replace(/\{\{\^\s*([\w.]+)\s*\}\}([\s\S]*?)\{\{\/\s*\1\s*\}\}/g, (m, k, body) =>
+      String(tok[k] ?? "").trim() ? "" : body
+    )
+    .replace(/\{\{\s*([\w.]+)\s*\}\}/g, (m, k) => (k in tok ? tok[k] : m));
 
 /* --------------------------------------------------------------- render --- */
 async function copyAssets(tplDir, outDir) {

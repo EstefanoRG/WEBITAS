@@ -6,6 +6,7 @@
     initTema();
     initForm();
     initImages();
+    initFloat();
     stampYear();
 
     if (!window.gsap || !window.ScrollTrigger) return;
@@ -13,11 +14,13 @@
     window.gsap.registerPlugin(window.ScrollTrigger);
 
     initHero();
+    initTrust();
     initFranja();
     initServices();
+    initEmergency();
     initParallaxGallery();
     initFamily();
-    initTestimonials();
+    initConfidence();
     initFaq();
     initCTA();
     refreshOnImages();
@@ -54,6 +57,33 @@
     if (year) year.textContent = String(new Date().getFullYear());
   }
 
+  function initFloat() {
+    var flotante = document.querySelector(".wa-float");
+    var zonas = [
+      document.querySelector(".hero"),
+      document.getElementById("reserva"),
+      document.querySelector(".site-footer"),
+    ].filter(Boolean);
+    if (!flotante || !zonas.length || !("IntersectionObserver" in window)) return;
+
+    var visibles = new Set();
+    var observador = new IntersectionObserver(
+      function (entradas) {
+        entradas.forEach(function (entrada) {
+          if (entrada.isIntersecting) visibles.add(entrada.target);
+          else visibles.delete(entrada.target);
+        });
+        // Sobre el formulario o el footer el botón taparía el botón de enviar.
+        flotante.classList.toggle("is-hidden", visibles.size > 0);
+      },
+      { threshold: 0.06 }
+    );
+
+    zonas.forEach(function (zona) {
+      observador.observe(zona);
+    });
+  }
+
   function initNav() {
     var header = document.querySelector(".site-header");
     var toggle = document.querySelector(".nav-toggle");
@@ -68,24 +98,57 @@
     setScrolled();
     window.addEventListener("scroll", setScrolled, { passive: true });
 
-    function closeMenu() {
+    function closeMenu(devolverFoco) {
       toggle.setAttribute("aria-expanded", "false");
       toggle.setAttribute("aria-label", "Abrir menú");
       nav.classList.remove("is-open");
+      document.body.classList.remove("nav-open");
+      setScrolled();
+      if (devolverFoco) toggle.focus();
+    }
+
+    function openMenu() {
+      toggle.setAttribute("aria-expanded", "true");
+      toggle.setAttribute("aria-label", "Cerrar menú");
+      nav.classList.add("is-open");
+      document.body.classList.add("nav-open");
       setScrolled();
     }
 
     toggle.addEventListener("click", function () {
       var open = toggle.getAttribute("aria-expanded") === "true";
-      toggle.setAttribute("aria-expanded", String(!open));
-      toggle.setAttribute("aria-label", open ? "Abrir menú" : "Cerrar menú");
-      nav.classList.toggle("is-open", !open);
-      setScrolled();
+      if (open) closeMenu(false);
+      else openMenu();
     });
 
     nav.querySelectorAll("a").forEach(function (link) {
-      link.addEventListener("click", closeMenu);
+      link.addEventListener("click", function () {
+        closeMenu(false);
+      });
     });
+
+    // Cerrar con Escape y con clic fuera: un panel abierto que no se puede
+    // cerrar sin volver a pulsar la hamburguesa se siente atascado.
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && nav.classList.contains("is-open")) {
+        closeMenu(true);
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!nav.classList.contains("is-open")) return;
+      if (!header.contains(event.target)) closeMenu(false);
+    });
+
+    window.addEventListener(
+      "resize",
+      function () {
+        if (window.innerWidth > 1151 && nav.classList.contains("is-open")) {
+          closeMenu(false);
+        }
+      },
+      { passive: true }
+    );
   }
 
   function initForm() {
@@ -96,12 +159,33 @@
     // Demo sin backend: se arma el mensaje y se abre WhatsApp con todo escrito.
     // Al activar la página se puede reemplazar por fetch("/api/reservas", ...).
     var wa = "{{whatsapp}}";
-    var encabezado = "Hola, vi su página web y quiero reservar una cita:";
+    var encabezado = "Hola, vi su página web y quiero reservar una cita en {{negocio}}:";
     var campos = form.querySelectorAll("input, select, textarea");
+
+    // La fecha no puede ser pasada. Se calcula en local para no depender de UTC.
+    var fecha = document.getElementById("fecha");
+    if (fecha) {
+      var hoy = new Date();
+      var iso = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
+      fecha.min = iso;
+    }
 
     function etiquetaDe(campo) {
       var span = form.querySelector('label[for="' + campo.id + '"] span');
-      return span ? span.textContent.trim() : campo.name;
+      return span
+        ? span.textContent.replace(/\s*\(opcional\)/i, "").trim()
+        : campo.name;
+    }
+
+    function valorLegible(campo, valor) {
+      if (!valor) return valor;
+      if (campo.type === "date") {
+        var partes = valor.split("-");
+        if (partes.length === 3) return partes[2] + "/" + partes[1] + "/" + partes[0];
+      }
+      return valor;
     }
 
     function marcar(campo, falta) {
@@ -127,7 +211,7 @@
           return;
         }
         marcar(campo, false);
-        if (valor) lineas.push("• " + nombre + ": " + valor);
+        if (valor) lineas.push("• " + nombre + ": " + valorLegible(campo, valor));
       });
 
       if (faltan.length) {
@@ -150,10 +234,16 @@
   }
 
   function initImages() {
+    // Si una foto no carga, se deja el alt sobre el fondo del bloque en vez
+    // de ocultarla: un hueco beige parece un error de diseño.
     document.querySelectorAll("img").forEach(function (img) {
-      img.addEventListener("error", function () {
-        img.style.opacity = "0";
-      });
+      img.addEventListener(
+        "error",
+        function () {
+          img.classList.add("is-missing");
+        },
+        { once: true }
+      );
     });
   }
 
@@ -295,15 +385,14 @@
         },
       });
 
-      gsap.from(".franja__cols > div, .franja__cta", {
+      gsap.from(".franja__cta", {
         y: 22,
         opacity: 0,
         duration: 0.7,
-        stagger: 0.1,
         ease: "power2.out",
         scrollTrigger: {
-          trigger: ".franja__cols",
-          start: "top 85%",
+          trigger: ".franja__cta",
+          start: "top 90%",
           once: true,
         },
       });
@@ -344,7 +433,7 @@
         // Recorrido 600px; y = 0.2 × distancia para ir un 20% más lento
         gsap.fromTo(
           img,
-          { scale: 1.05, opacity: 0.4, yPercent: -6 },
+          { scale: 1.05, opacity: 0.95, yPercent: -6 },
           {
             scale: 1.2,
             opacity: 1,
@@ -379,7 +468,7 @@
         var img = item.querySelector(".gallery__img");
         gsap.fromTo(
           img,
-          { scale: 1.03, opacity: 0.5, yPercent: -4 },
+          { scale: 1.03, opacity: 0.96, yPercent: -4 },
           {
             scale: 1.12,
             opacity: 1,
@@ -434,7 +523,6 @@
         },
       });
 
-      animateCounters();
     });
 
     mm.add("(max-width: 1023px) and (prefers-reduced-motion: no-preference)", function () {
@@ -467,49 +555,75 @@
         },
       });
 
-      animateCounters();
     });
   }
 
-  function animateCounters() {
+  function initTrust() {
     var gsap = window.gsap;
-    gsap.utils.toArray(".stats__value").forEach(function (el) {
-      var target = Number(el.getAttribute("data-count") || 0);
-      var suffix = el.getAttribute("data-suffix") || "";
-      var obj = { val: 0 };
+    var mm = gsap.matchMedia();
 
-      gsap.to(obj, {
-        val: target,
-        duration: 1.4,
+    mm.add("(prefers-reduced-motion: no-preference)", function () {
+      gsap.from(".trust__item", {
+        y: 12,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.06,
         ease: "power2.out",
-        snap: { val: 1 },
         scrollTrigger: {
-          trigger: el,
-          start: "top 90%",
+          trigger: ".trust",
+          start: "top 94%",
           once: true,
-        },
-        onUpdate: function () {
-          var value = Math.round(obj.val);
-          el.textContent = value >= 1000 ? value.toLocaleString("es") + suffix : value + suffix;
         },
       });
     });
   }
 
-  function initTestimonials() {
+  function initEmergency() {
     var gsap = window.gsap;
     var mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", function () {
-      gsap.from(".testimonial-card", {
-        y: 30,
+      gsap.from(".emergency__copy > *, .emergency__actions", {
+        y: 20,
         opacity: 0,
-        duration: 0.75,
+        duration: 0.65,
+        stagger: 0.08,
         ease: "power2.out",
-        stagger: 0.12,
         scrollTrigger: {
-          trigger: ".testimonials__grid",
-          start: "top 80%",
+          trigger: ".emergency",
+          start: "top 84%",
+          once: true,
+        },
+      });
+    });
+  }
+
+  function initConfidence() {
+    var gsap = window.gsap;
+    var mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", function () {
+      gsap.from(".rating-card", {
+        y: 24,
+        opacity: 0,
+        duration: 0.7,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".confidence__grid",
+          start: "top 82%",
+          once: true,
+        },
+      });
+
+      gsap.from(".info-list__item", {
+        y: 16,
+        opacity: 0,
+        duration: 0.55,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".info-list",
+          start: "top 86%",
           once: true,
         },
       });
