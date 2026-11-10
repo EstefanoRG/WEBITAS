@@ -5,35 +5,64 @@ Static one-page website for a dental clinic (Spanish, `lang="es"`). Three files 
 ## Running / verifying
 - Open `index.html` directly in a browser, or serve the folder (e.g. `python -m http.server`) for correct relative paths.
 - There is no build/lint/typecheck/test command. Verify changes visually in a browser.
-- GSAP + ScrollTrigger are loaded from a CDN in `index.html` (bottom, `defer`). `script.js` bails out of all animations if `window.gsap`/`window.ScrollTrigger` are missing — the page still works without them.
+- No GSAP or external JS libraries. `script.js` uses native APIs only.
+- Verify at 390, 768 and 1440 px. The page should not hide content behind scroll animations because there are none.
 
 ## Templates are tokenized (intentional)
 This is a reusable template. `generator/build.mjs` fills these `{{...}}` tokens per business; do not hardcode client data:
-- **Business (from the CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{ciudad}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`.
-- **Contact / NAP:** `{{telefono}}` (display), `{{telefono_tel}}` (with `+`, for `tel:`), `{{whatsapp}}` (digits, for `wa.me`). These come from the **business's own phone** and are used in hero, footer, float button, form and JSON-LD.
+- **Business (from the CSV row):** `{{negocio}}`, `{{negocio_url}}`, `{{negocio_mark}}`, `{{ciudad}}`, `{{direccion}}`, `{{direccion_url}}`, `{{horarios}}`, `{{email}}`, `{{instagram_user}}`, `{{instagram_url}}`, `{{facebook_url}}`, `{{maps_url}}`, `{{rating}}`, `{{resenas}}`, `{{resenas_txt}}`, `{{categoria}}`.
+- **Contact / NAP:** `{{telefono}}` (display), `{{telefono_tel}}` (with `+`, for `tel:`), `{{whatsapp}}` (digits, for `wa.me`). These come from the **business's own phone** and are used in hero, form, footer, float button and JSON-LD.
 - **Seller:** `{{vendedor_nombre}}` and `{{vendedor_whatsapp}}`. The vendor's number appears **only** in the sales CTAs ("¿Es su negocio?" / "Activar mi página"); never as the business's phone.
-- Team names/specialties, testimonials and stats are **placeholder content**: replace or remove them per client before publishing (do not ship invented testimonials/stats as if real).
 - `canonical` is empty on purpose (demos are `noindex`).
-- `<!-- REEMPLAZAR: ... -->` marks images to swap. A photo list is in the comment at the top of `<body>`.
+- `<!-- REEMPLAZAR: ... -->` marks images to swap.
+
+### Conditionals
+`fill()` in `generator/build.mjs` understands `{{#token}}…{{/token}}` and `{{^token}}…{{/token}}`.
+- The Google rating block only renders when `{{rating}}` exists.
+- Social links only render when `{{instagram_url}}` / `{{facebook_url}}` exist.
+- The email line only renders when `{{email}}` exists.
+- **Do not nest conditionals.** The JSON-LD deliberately omits `sameAs` to avoid nesting.
+
+## Content rules (important)
+This is a **mass demo**, not a personalized brand page. Do not invent doctors, testimonials, patient names, review counts or statistics. The template intentionally builds trust from the process:
+- first visit → diagnosis → written plan and budget → follow-up.
+- `{{rating}}` / `{{resenas_txt}}` are the only proof numbers and come from real data.
+- If a business has no rating or social links, the corresponding blocks simply disappear.
+- Do not add a team section with stock doctors or a testimonial section with fake reviews. If a client provides real people/reviews, add them outside this reusable template.
 
 ## Images
-- Scene photos come from Pexels (`images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=...`) — free to use, hotlinkable. IDs in use: hero `3845627`, gallery `3845626`/`6473194`/`12917374`, nosotros `7803056`, team `37458147`/`37458044`/`32205053`, CTA `3845810`.
-- Testimonial avatars use `randomuser.me/api/portraits/...`.
-- Unsplash (`images.unsplash.com`) is **not** used here because its photo URLs are blocked/unreliable in some networks; prefer Pexels or local files when adding images.
+Scene photos come from Pexels (`images.pexels.com/photos/<id>/pexels-photo-<id>.jpeg?auto=compress&cs=tinysrgb&w=...`) — free to use, hotlinkable. IDs in use:
+- Hero: `3845627` (patient smiling).
+- Clinic large: `6473194` (clinic interior).
+- Clinic small: `3845626` (consultation detail).
+- OG: `3845627`.
+
+No `randomuser.me` avatars. No doctor portraits with fake names. Replace with real photos when activating a client.
 
 ## Conventions
-- CSS uses design tokens in `:root` (`--primary` teal `#0d6273`, `--accent` coral `#ea6a4b`, spacing `--sp-*`, type `--fs-*`). Reuse tokens; do not hardcode colors/spacing.
-- BEM-ish class names (`.service-card__title`, `.team-card__role`, `.nav-toggle__bar`).
-- Animations are gated by `gsap.matchMedia()` on `min-width: 1024px` / `max-width: 1023px` and `prefers-reduced-motion`. Keep new animation code inside the existing `init*()` functions and follow this pattern.
-- `refreshOnImages()` calls `ScrollTrigger.refresh()` after all images settle; it temporarily forces `scroll-behavior: auto` around the refresh on purpose (a refresh mid-scroll corrupts trigger positions). Do not remove that guard. Keep it in mind when adding images.
-- `id="inicio"` lives on `<body>`, not the fixed `<header>`: anchor navigation to a `position: fixed` element is a no-op, so the logo would not scroll back to top otherwise.
-- `.gallery__img` is intentionally oversized (`height: 140%; margin-top: -20%`) so the gallery parallax translate never exposes the card's background. Keep the overscan if you retune that animation.
-- The reservation form (`#form-reserva`) has no backend: `initForm()` validates the required fields and opens WhatsApp (`wa.me`) with the data pre-written. The clinic number lives in one `wa` constant inside `initForm()`. The integration point for a real backend is the comment there (`fetch("/api/reservas", ...)`).
-- Theme is light/dark via `data-tema="oscuro"` on `<html>`, toggled by `#tema-toggle` and persisted in `localStorage["tema"]`. An inline script in `<head>` applies the saved theme before paint to avoid a flash; `initTema()` handles the toggle and button state.
-- `.barra-dueno` (sales bar) is `position: fixed` at the top; the header is offset by `--barra-h`. Keep that variable in sync with the bar's real height.
-- The services grid holds 9 cards (3×3) and numbers itself via the `svc` CSS counter (`.service-card::after`). Adding/removing cards renumbers automatically.
-- No comments in code unless they explain non-obvious intent (existing comments are in Spanish).
+- CSS uses design tokens in `:root`:
+  - Paper `#f2f4f1`, ink `#17221f`, wine `#5b1f2b`, sage `#a9b7a5`, peach `#e8c8ba`.
+  - Type: `Newsreader` for display, `Manrope` for body/UI.
+  - Spacing `--sp-*`, type `--fs-*`, max width `--max`, fixed chrome `--barra-h` / `--header-h`.
+- BEM-ish class names (`.hero__copy`, `.treatment-group`, `.faq__q`).
+- Buttons are rectangular with `--radius: 2px`; avoid pills and card-grid repetition.
+- No theme toggle, no `data-tema`, no `localStorage` theme. Single light direction.
+- **Fixed chrome:** the demo bar is fixed at the top (`--barra-h`) and the header is fixed below it (`--header-h`). The hero image starts at the top of the page and runs behind both.
+  - Header over the hero: ink tint, light logo/nav/CTA.
+  - `.is-scrolled` and `body.nav-open`: paper header, dark logo/nav/CTA.
+  - Do not remove the fixed offsets: `html { scroll-padding-top: calc(var(--barra-h) + var(--header-h) + 16px); }` keeps anchors below the fixed chrome. Do not add a second `scroll-margin-top` on sections or the offset doubles.
+- Mobile navigation: full-screen panel at `max-width: 620px`; the hamburger bars morph into an X (same button opens/closes). `Escape`, backdrop click and nav-link click close it. Nav links inside the paper panel are always ink, independent of the header state.
+- Hero: full-bleed image + dark wine/ink overlay, no framed image. Text sits on the left; the "Primera visita" card is desktop-only.
+- Treatments: four `<details>` groups (Salud, Estética, Función, Niños). Each item has a name + short explanation. JS opens all groups on desktop and closes them on mobile; on mobile they act as a "ver más".
+- The map is a Google Maps iframe: `https://www.google.com/maps?q={{direccion_url}}&output=embed`. Keep the "Abrir en Google Maps" fallback link and the iframe `title`.
+- The reservation form (`#form-reserva`) has no backend: `script.js` validates required fields and opens WhatsApp with the data pre-written.
+  - Business number lives in `var WA = "{{whatsapp}}"` inside `script.js` (filled by the generator).
+  - Business name lives in `var NEGOCIO = "{{negocio}}"`.
+  - Fields: name, phone, treatment, optional message.
+- `id="inicio"` lives on `<body>`; the logo links there.
+- No comments in code unless they explain non-obvious intent.
 
-## Sector notes (dentistry) — what this demo covers
-- Services: consulta/diagnóstico, limpieza, implantes, ortodoncia, estética (blanqueamiento/carillas), endodoncia, periodoncia, odontopediatría, prótesis/rehabilitación.
-- Trust content: proceso claro (diagnóstico → plan → presupuesto → seguimiento), equipo de especialistas, estadísticas, testimonios y FAQ (dolor, precios, seguros/reembolsos, financiamiento en cuotas, urgencias, frecuencia de limpieza).
+## Sector notes (dentistry)
+- Treatments are organized by outcome, not as cards: **Salud** (consulta, limpieza, endodoncia, periodoncia), **Estética** (blanqueamiento, carillas, diseño de sonrisa), **Función** (ortodoncia, implantes, prótesis/rehabilitación), **Niños** (odontopediatría).
+- Trust is built through the first-visit process and written budget, not invented numbers.
+- FAQ covers pain, first appointment, insurance, emergencies and cleaning frequency.
